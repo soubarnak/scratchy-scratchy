@@ -15,11 +15,21 @@ const RETRIES = 4;
 
 const readLibrary = async name => JSON.parse(await fs.readFile(path.join(libraryDir, `${name}.json`), 'utf8'));
 
+// Asset URLs need the file extension. Prefer md5ext; otherwise use md5/assetId if it carries one, or build
+// it from the hash and dataFormat.
+const assetFileName = item => {
+    if (item.md5ext) return item.md5ext;
+    const hash = item.md5 || item.assetId;
+    if (!hash) return null;
+    if (path.extname(hash)) return hash;
+    return item.dataFormat ? `${hash}.${item.dataFormat}` : null;
+};
+
 const collectSimple = (library, dest, label) => {
     for (const item of library) {
-        const names = [item.md5, item.baseLayerMD5, item.md5ext].filter(Boolean);
+        const names = [assetFileName(item), item.baseLayerMD5].filter(name => name && path.extname(name));
         if (names.length < 1) {
-            console.warn(`${label} has no MD5 property: ${item.name}`);
+            console.warn(`${label} has no usable MD5 property: ${item.name}`);
         }
         names.forEach(name => dest.add(name));
     }
@@ -48,12 +58,17 @@ const fetchAsset = async md5ext => {
     for (let attempt = 1; attempt <= RETRIES; attempt++) {
         try {
             const response = await fetch(`${ASSET_URL}/${md5ext}/get/`);
+            if (response.status === 404) {
+                // Missing assets never appear later; fail fast instead of retrying.
+                throw Object.assign(new Error('status 404'), {fatal: true});
+            }
             if (!response.ok) throw new Error(`status ${response.status}`);
             await fs.writeFile(`${dest}.tmp`, Buffer.from(await response.arrayBuffer()));
             await fs.rename(`${dest}.tmp`, dest);
             return true;
         } catch (err) {
             lastError = err;
+            if (err.fatal) break;
             await new Promise(resolve => setTimeout(resolve, 500 * attempt));
         }
     }
@@ -62,6 +77,10 @@ const fetchAsset = async md5ext => {
 
 const main = async () => {
     await fs.mkdir(cacheDir, {recursive: true});
+    // Remove partial downloads left by an interrupted run.
+    for (const name of await fs.readdir(cacheDir)) {
+        if (name.endsWith('.tmp')) await fs.rm(path.join(cacheDir, name), {force: true});
+    }
     const assets = [...await collectAssets()];
     console.log(`Total library assets: ${assets.length}`);
 

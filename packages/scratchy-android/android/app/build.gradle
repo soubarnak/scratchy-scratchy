@@ -24,7 +24,7 @@ android {
                 storeFile file(ksPath)
                 storePassword ksPass
                 keyAlias 'scratchy'
-                keyPassword ksPass
+                keyPassword System.getenv('SCRATCHY_KEY_PASS') ?: ksPass
             }
         }
     }
@@ -36,6 +36,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+// Refuse to build an unsigned release APK/bundle; debug builds need no signing environment.
+gradle.taskGraph.whenReady { graph ->
+    def releaseRequested = graph.allTasks.any { it.project == project && it.name.toLowerCase().contains('release') }
+    if (releaseRequested && !(System.getenv('SCRATCHY_KEYSTORE') && System.getenv('SCRATCHY_KEYSTORE_PASS'))) {
+        throw new GradleException('Release build needs signing: set SCRATCHY_KEYSTORE (keystore path) and ' +
+            'SCRATCHY_KEYSTORE_PASS (store password; optional SCRATCHY_KEY_PASS, defaults to the store password).')
     }
 }
 
