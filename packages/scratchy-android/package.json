@@ -8,6 +8,7 @@
     "fetch:assets": "node scripts/fetch-library-assets.mjs",
     "build": "npm run build:android -w @scratch/scratch-gui && npm run fetch:assets && cap sync android",
     "apk": "cd android && ./gradlew assembleDebug",
+    "apk:release": "cd android && ./gradlew assembleRelease",
     "assets": "capacitor-assets generate --android"
   },
   "dependencies": {
