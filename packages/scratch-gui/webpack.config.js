@@ -229,6 +229,35 @@ const buildConfig = baseConfig.clone()
         ]
     }));
 
+// build the Android (Capacitor) app bundle in `build-android/`
+const androidConfig = baseConfig.clone()
+    .merge({
+        entry: {
+            android: './src/playground/android.jsx'
+        },
+        output: {
+            path: path.resolve(__dirname, 'build-android'),
+
+            // The bundle is served from the Capacitor WebView origin, so keep asset paths relative.
+            publicPath: ''
+        }
+    })
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['android'],
+        filename: 'index.html',
+        template: 'src/playground/android.html',
+        title: 'Scratchy-Scratchy'
+    }))
+    .addPlugin(new CopyWebpackPlugin({
+        patterns: [
+            {
+                from: 'static',
+                to: 'static'
+            }
+        ]
+    }));
+
 // Skip building `dist/` unless explicitly requested
 // It roughly doubles build time and isn't needed for `scratch-gui` development
 // If you need non-production `dist/` for local dev, such as for `scratch-www` work, you can run something like:
@@ -239,7 +268,8 @@ let config;
 switch (process.env.BUILD_TYPE) {
 case 'dist': config = distConfig.get(); break;
 case 'dist-standalone': config = distStandaloneConfig.get(); break;
+case 'android': config = androidConfig.get(); break;
 default: config = buildConfig.get(); break;
 }
 
-module.exports = buildDist ? config : buildConfig.get();
+module.exports = (buildDist || process.env.BUILD_TYPE === 'android') ? config : buildConfig.get();
