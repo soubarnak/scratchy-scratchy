@@ -17,6 +17,12 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  issues: read
+
 concurrency:
   group: "${{ github.workflow }} @ ${{ github.event.compare || github.head_ref || github.ref }}"
   cancel-in-progress: true
@@ -105,6 +111,7 @@ jobs:
     # - and
     #   - it's not a Renovate branch (just to reduce noise)
     if: ${{
+        (github.repository == 'scratchfoundation/scratch-editor') &&
         (needs.build.outputs.any-workspace == 'true') &&
         (
           (!github.event.pull_request) ||
