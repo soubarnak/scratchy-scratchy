@@ -234,6 +234,34 @@ $border-radius: 0.25rem;
 
 @media (max-width: 767px), (max-height: 500px) {
     :global(.scratchy-android) .editor-container {
-        min-width: 480px;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    /* Wrap the control groups instead of running off the right edge */
+    :global(.scratchy-android) .row {
+        flex-wrap: wrap;
+        row-gap: calc(2 * $space);
+    }
+
+    :global(.scratchy-android) .row + .row {
+        margin-top: calc(2 * $space);
+    }
+
+    :global(.scratchy-android) .input-group {
+        flex-wrap: wrap;
+        row-gap: $space;
+    }
+
+    :global(.scratchy-android) .waveform-container {
+        box-sizing: border-box;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    :global(.scratchy-android) .waveform-container > * {
+        max-width: 100%;
     }
 }

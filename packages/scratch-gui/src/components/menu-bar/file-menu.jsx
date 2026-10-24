@@ -50,6 +50,15 @@ const FileMenu = ({
         isRtl
     });
 
+    // Close the dropdown once an item is chosen (the menu only closes on outside taps otherwise).
+    const closeAfter = handler => (...args) => {
+        try {
+            return handler && handler(...args);
+        } finally {
+            handleOnClose();
+        }
+    };
+
     const saveNowMessage = (
         <FormattedMessage
             defaultMessage="Save now"
@@ -100,7 +109,7 @@ const FileMenu = ({
             >
                 <MenuSection>
                     <MenuItem
-                        onClick={onClickNew}
+                        onClick={closeAfter(onClickNew)}
                         isDataMenuItem
                         onParentKeyDown={handleKeyDownOpenMenu}
                     >
@@ -111,7 +120,7 @@ const FileMenu = ({
                     <MenuSection>
                         {canSave && (
                             <MenuItem
-                                onClick={onClickSave}
+                                onClick={closeAfter(onClickSave)}
                                 isDataMenuItem
                                 onParentKeyDown={handleKeyDownOpenMenu}
                             >
@@ -120,7 +129,7 @@ const FileMenu = ({
                         )}
                         {canCreateCopy && (
                             <MenuItem
-                                onClick={onClickSaveAsCopy}
+                                onClick={closeAfter(onClickSaveAsCopy)}
                                 isDataMenuItem
                                 onParentKeyDown={handleKeyDownOpenMenu}
                             >
@@ -129,7 +138,7 @@ const FileMenu = ({
                         )}
                         {canRemix && (
                             <MenuItem
-                                onClick={onClickRemix}
+                                onClick={closeAfter(onClickRemix)}
                                 isDataMenuItem
                                 onParentKeyDown={handleKeyDownOpenMenu}
                             >
@@ -140,7 +149,7 @@ const FileMenu = ({
                 )}
                 <MenuSection>
                     <MenuItem
-                        onClick={onStartSelectingFileUpload}
+                        onClick={closeAfter(onStartSelectingFileUpload)}
                         isDataMenuItem
                         onParentKeyDown={handleKeyDownOpenMenu}
                     >
@@ -149,7 +158,7 @@ const FileMenu = ({
                     <SB3Downloader>{(className, downloadProjectCallback) => (
                         <MenuItem
                             className={className}
-                            onClick={getSaveToComputerHandler(downloadProjectCallback)}
+                            onClick={closeAfter(getSaveToComputerHandler(downloadProjectCallback))}
                             isDataMenuItem
                             onParentKeyDown={handleKeyDownOpenMenu}
                         >

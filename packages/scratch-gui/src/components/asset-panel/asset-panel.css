@@ -36,8 +36,10 @@
 }
 
 /*
-    Android app, phones: the paint and sound editors have a fixed minimum width,
-    so the detail area scrolls sideways instead of clipping them.
+    Android app, phones: the detail area (paint / sound editor) never scrolls sideways.
+    The paint editor's top toolbar becomes its own horizontal scroll strip, and its
+    canvas shrinks to the available width. (scratch-paint class names are hashed, so
+    match on the stable prefix.)
 */
 @media (max-width: 767px), (max-height: 500px) {
     :global(.scratchy-android) .wrapper {
@@ -47,12 +49,47 @@
 
     :global(.scratchy-android) .detail-area {
         min-width: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
     }
 
     :global(.scratchy-android) .detail-area > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    :global(.scratchy-android) .detail-area [class*="paint-editor_editor-container_"] {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /* toolbar rows: one scrollable strip */
+    :global(.scratchy-android) .detail-area [class*="paint-editor_editor-container-top_"] {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        scrollbar-width: thin;
         flex-shrink: 0;
+    }
+
+    :global(.scratchy-android) .detail-area [class*="paint-editor_editor-container-top_"] > * {
+        width: max-content;
+        min-width: 100%;
+    }
+
+    /* canvas row fits the width */
+    :global(.scratchy-android) .detail-area [class*="paint-editor_top-align-row_"] {
+        min-width: 0;
+        padding-top: 8px;
+    }
+
+    :global(.scratchy-android) .detail-area [class*="paint-editor_controls-container_"] {
+        min-width: 0;
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+
+    :global(.scratchy-android) .detail-area [class*="paint-editor_canvas-container_"] {
+        min-width: 0;
     }
 }

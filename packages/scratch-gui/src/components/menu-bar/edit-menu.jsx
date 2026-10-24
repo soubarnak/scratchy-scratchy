@@ -39,6 +39,15 @@ const EditMenu = ({
         isRtl
     });
 
+    // Close the dropdown once an item is chosen (the menu only closes on outside taps otherwise).
+    const closeAfter = handler => (...args) => {
+        try {
+            return handler && handler(...args);
+        } finally {
+            handleOnClose();
+        }
+    };
+
     return (
         <button
             className={classNames(styles.menuBarItem, styles.hoverable, {
@@ -68,7 +77,7 @@ const EditMenu = ({
                 <DeletionRestorer>{(handleRestore, {restorable, deletedItem}) => (
                     <MenuItem
                         className={classNames({[styles.disabled]: !restorable})}
-                        onClick={onRestoreOption(handleRestore)}
+                        onClick={closeAfter(onRestoreOption(handleRestore))}
                         isDataMenuItem
                         onParentKeyDown={handleKeyDownOpenMenu}
                         isDisabled={!restorable}
@@ -79,7 +88,7 @@ const EditMenu = ({
                 <MenuSection>
                     <TurboMode>{(toggleTurboMode, {turboMode}) => (
                         <MenuItem
-                            onClick={toggleTurboMode}
+                            onClick={closeAfter(toggleTurboMode)}
                             isDataMenuItem
                             onParentKeyDown={handleKeyDownOpenMenu}
                         >
