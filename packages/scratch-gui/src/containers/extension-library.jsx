@@ -3,9 +3,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from '@scratch/scratch-vm';
 import {defineMessages, injectIntl} from 'react-intl';
+import {connect} from 'react-redux';
 import intlShape from '../lib/intlShape.js';
 
 import extensionLibraryContent from '../lib/libraries/extensions/index.jsx';
+
+import {PLATFORM} from '../lib/platform';
 
 import LibraryComponent from '../components/library/library.jsx';
 import extensionIcon from '../components/action-menu/icon--sprite.svg';
@@ -48,7 +51,11 @@ class ExtensionLibrary extends React.PureComponent {
         }
     }
     render () {
-        const extensionLibraryThumbnailData = extensionLibraryContent.map(extension => ({
+        // hardware extensions need Bluetooth/serial, which the Android WebView does not provide
+        const extensions = this.props.platform === PLATFORM.ANDROID ?
+            extensionLibraryContent.filter(extension => !extension.bluetoothRequired) :
+            extensionLibraryContent;
+        const extensionLibraryThumbnailData = extensions.map(extension => ({
             rawURL: extension.iconURL || extensionIcon,
             ...extension
         }));
@@ -70,8 +77,13 @@ ExtensionLibrary.propTypes = {
     intl: intlShape.isRequired,
     onCategorySelected: PropTypes.func,
     onRequestClose: PropTypes.func,
+    platform: PropTypes.oneOf(Object.keys(PLATFORM)),
     visible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
-export default injectIntl(ExtensionLibrary);
+const mapStateToProps = state => ({
+    platform: state.scratchGui.platform.platform
+});
+
+export default injectIntl(connect(mapStateToProps)(ExtensionLibrary));

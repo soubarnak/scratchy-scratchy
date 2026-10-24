@@ -1,6 +1,16 @@
 /** Host serving library assets when no library asset host is configured. */
 const LEGACY_LIBRARY_ASSET_HOST = 'https://cdn.assets.scratch.mit.edu';
 
+let libraryAssetBase = '';
+
+/**
+ * Serve library assets from a base path (e.g. './library-assets/') instead of the public CDN.
+ * @param {string} base - base ending in '/', holding files named `<md5>.<ext>`; empty restores the CDN.
+ */
+export const setLibraryAssetBase = (base: string): void => {
+    libraryAssetBase = base;
+};
+
 /**
  * Build the URL a library asset is fetched from, in the shape Scratch's asset service uses.
  * @param {string} assetId - the md5 of the asset.
@@ -10,6 +20,9 @@ const LEGACY_LIBRARY_ASSET_HOST = 'https://cdn.assets.scratch.mit.edu';
  * @returns {string} - the URL to fetch the asset from.
  */
 export const buildLibraryAssetUrl = (assetId: string, dataFormat: string, host?: string): string => {
+    if (libraryAssetBase) {
+        return `${libraryAssetBase}${assetId}.${dataFormat}`;
+    }
     if (!host) {
         return `${LEGACY_LIBRARY_ASSET_HOST}/internalapi/asset/${assetId}.${dataFormat}/get/`;
     }

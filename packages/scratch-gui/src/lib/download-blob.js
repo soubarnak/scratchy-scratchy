@@ -1,4 +1,18 @@
+let downloadHandler = null;
+
+/**
+ * Replace the default `<a download>` behaviour, e.g. for WebViews that ignore it.
+ * @param {?function(string, Blob): void} handler - called with (filename, blob); null restores the default.
+ */
+export const setDownloadHandler = handler => {
+    downloadHandler = handler;
+};
+
 export default (filename, blob) => {
+    if (downloadHandler) {
+        downloadHandler(filename, blob);
+        return;
+    }
     const downloadLink = document.createElement('a');
     document.body.appendChild(downloadLink);
 

@@ -5,7 +5,8 @@
   "description": "Scratchy-Scratchy: Capacitor Android wrapper for scratch-gui",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "build": "npm run build:android -w @scratch/scratch-gui && cap sync android",
+    "fetch:assets": "node scripts/fetch-library-assets.mjs",
+    "build": "npm run build:android -w @scratch/scratch-gui && npm run fetch:assets && cap sync android",
     "apk": "cd android && ./gradlew assembleDebug"
   },
   "dependencies": {

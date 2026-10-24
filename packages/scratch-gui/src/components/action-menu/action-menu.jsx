@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import ReactTooltip from 'react-tooltip';
 import styles from './action-menu.css';
 import {KEY} from '../../lib/navigation-keys';
+import {getFileAccept} from '../../lib/file-accept';
 
 const CLOSE_DELAY = 300; // ms
 
@@ -244,7 +245,7 @@ const ActionMenu = ({
                                         />
                                         {hasFileInput ? (
                                             <input
-                                                accept={fileAccept}
+                                                accept={getFileAccept(fileAccept)}
                                                 className={styles.fileInput}
                                                 multiple={fileMultiple}
                                                 ref={fileInput}

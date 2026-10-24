@@ -124,6 +124,9 @@
     ]
   },
   "dependencies": {
+    "@capacitor/app": "8.1.2",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3",
     "@mediapipe/face_detection": "0.4.1646425229",
     "@microbit/microbit-universal-hex": "0.2.2",
     "@radix-ui/react-context-menu": "2.3.4",
