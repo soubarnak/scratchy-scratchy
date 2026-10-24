@@ -66,6 +66,7 @@
 }
 
 .divider {
+    flex-shrink: 0;
     transform: scaleY(1.39);
     height: $library-filter-bar-height;
 }
@@ -87,4 +88,71 @@
 
 .membership-tag {
     background-color: $membership-blue;
+}
+
+/* Android app, phones: compact one-line filter strip and a denser grid */
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .filter-bar {
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+        padding: 0.5rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    :global(.scratchy-android) .filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    :global(.scratchy-android) .filter-bar-item {
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    :global(.scratchy-android) .filter {
+        flex: 0 0 9rem;
+    }
+
+    :global(.scratchy-android) .filter-input,
+    :global(.scratchy-android) .filter-input:focus,
+    :global(.scratchy-android) .filter-input:not([value=""]) {
+        width: 100%;
+        min-width: 0;
+        transition: none;
+    }
+
+    :global(.scratchy-android) .tag-wrapper {
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+        row-gap: 0;
+    }
+
+    :global(.scratchy-android) .tag-wrapper > * {
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 44px;
+    }
+
+    :global(.scratchy-android) .library-scroll-grid,
+    :global(.scratchy-android) .library-scroll-grid.withFilterBar {
+        height: auto;
+        flex: 1 1 0;
+        min-height: 0;
+        padding: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    :global(.scratchy-android) .library-category {
+        width: 100%;
+    }
+
+    :global(.scratchy-android) .library-category-title {
+        font-size: 1.25rem;
+    }
+
+    :global(.scratchy-android) .library-category-items {
+        padding-bottom: 0.5rem;
+    }
 }

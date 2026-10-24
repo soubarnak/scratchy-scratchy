@@ -390,3 +390,8 @@ $mobile-nav-height: 3.5rem; /* keep in sync with mobile-nav.css */
     right: auto;
     left: $space;
 }
+
+.android-compact .tab-panel {
+    min-width: 0;
+    overflow: hidden;
+}

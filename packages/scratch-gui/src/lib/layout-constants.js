@@ -64,7 +64,9 @@ STAGE_DISPLAY_SCALES[STAGE_DISPLAY_SIZES.compact] = 0.75; // phone layout; real 
 
 // Zoom levels for the Android platform
 const BLOCKS_MEDIUM_SCALE = 0.8;
-const BLOCKS_COMPACT_SCALE = 0.9;
+const BLOCKS_COMPACT_SCALE = 0.55;
+// scratch-blocks fixes the palette at 250px; on phones it is narrower so the workspace keeps some room
+const BLOCKS_COMPACT_FLYOUT_WIDTH = 190;
 
 export default {
     standardStageWidth: 480,
@@ -81,6 +83,7 @@ export default {
 };
 
 export {
+    BLOCKS_COMPACT_FLYOUT_WIDTH,
     BLOCKS_COMPACT_SCALE,
     BLOCKS_DEFAULT_SCALE,
     BLOCKS_MEDIUM_SCALE,

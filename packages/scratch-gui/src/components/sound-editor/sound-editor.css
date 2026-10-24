@@ -231,3 +231,9 @@ $border-radius: 0.25rem;
 .button:disabled > img {
     opacity: 0.25;
 }
+
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .editor-container {
+        min-width: 480px;
+    }
+}

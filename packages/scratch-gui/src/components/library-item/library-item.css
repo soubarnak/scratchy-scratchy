@@ -218,3 +218,33 @@
     height: 1.25rem;
     z-index: 1;
 }
+
+/* Android app, phones: two to three cards per row */
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .library-item {
+        flex: 0 0 calc(50% - 2 * $space);
+        max-width: calc(50% - 2 * $space);
+        height: 140px;
+        margin: calc($space / 2) $space;
+        padding: 0.5rem 0.5rem 0 0.5rem;
+    }
+}
+
+@media (min-width: 560px) and (max-width: 767px) {
+    :global(.scratchy-android) .library-item {
+        flex-basis: calc(33.333% - 2 * $space);
+        max-width: calc(33.333% - 2 * $space);
+    }
+}
+
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .featured-item {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin: $space 0;
+    }
+
+    :global(.scratchy-android) .featured-text {
+        width: auto;
+    }
+}

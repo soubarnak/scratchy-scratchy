@@ -35,6 +35,7 @@ import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 import MobileNav, {MOBILE_PANES} from '../mobile-nav/mobile-nav.jsx';
 
 import layout, {
+    BLOCKS_COMPACT_FLYOUT_WIDTH,
     BLOCKS_COMPACT_SCALE,
     BLOCKS_MEDIUM_SCALE,
     LAYOUT_MODES,
@@ -245,8 +246,13 @@ const GUIComponent = props => {
     const isCompact = isAndroid && layoutMode === LAYOUT_MODES.compact;
     const isMedium = isAndroid && layoutMode === LAYOUT_MODES.medium;
     let blocksZoomStartScale;
-    if (isCompact) blocksZoomStartScale = BLOCKS_COMPACT_SCALE;
-    else if (isMedium) blocksZoomStartScale = BLOCKS_MEDIUM_SCALE;
+    let blocksFlyoutScale;
+    let blocksFlyoutWidth;
+    if (isCompact) {
+        blocksZoomStartScale = BLOCKS_COMPACT_SCALE;
+        blocksFlyoutScale = BLOCKS_COMPACT_SCALE;
+        blocksFlyoutWidth = BLOCKS_COMPACT_FLYOUT_WIDTH;
+    } else if (isMedium) blocksZoomStartScale = BLOCKS_MEDIUM_SCALE;
     const [mobilePane, setMobilePane] = useState(MOBILE_PANES.code);
 
     useEffect(() => {
@@ -558,6 +564,8 @@ const GUIComponent = props => {
                                             theme={theme}
                                             vm={vm}
                                             colorMode={colorMode}
+                                            flyoutScale={blocksFlyoutScale}
+                                            flyoutWidth={blocksFlyoutWidth}
                                             zoomStartScale={blocksZoomStartScale}
                                         />
                                     </Box>

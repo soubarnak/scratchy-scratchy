@@ -168,3 +168,78 @@ $sides: 20rem;
 [dir="rtl"] .help-button {
     padding-left: 0;
 }
+
+/*
+    Android app, phones: modals fit the screen, draw below the status bar and have big touch targets.
+    Capacitor exposes the insets as --safe-area-inset-* too, because env() is not always filled in.
+*/
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .modal-overlay {
+        overflow: auto;
+    }
+
+    :global(.scratchy-android) .modal-content {
+        margin: max(8px, env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)) auto 8px;
+        max-width: calc(100vw - 16px);
+        max-height: calc(100% - 16px);
+        overflow-y: auto;
+    }
+
+    :global(.scratchy-android) .modal-content.full-screen {
+        margin: 0;
+        max-width: none;
+        max-height: none;
+        padding-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+        padding-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+    }
+
+    /* Wide children (the scrolling filter strip) must not stretch the modal past the screen */
+    :global(.scratchy-android) .modal-content.full-screen > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    :global(.scratchy-android) .full-screen .header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        flex-shrink: 0;
+        box-sizing: content-box;
+        height: max($library-header-height, 44px);
+        padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+    }
+
+    :global(.scratchy-android) .full-screen .header-item {
+        padding: 0 0.75rem;
+        min-height: 44px;
+    }
+
+    :global(.scratchy-android) .full-screen .header-item-close {
+        flex: 0 0 auto;
+        min-width: 44px;
+    }
+
+    :global(.scratchy-android) .full-screen .header-item-title,
+    :global(.scratchy-android) .full-screen [dir="ltr"] .header-item-title,
+    :global(.scratchy-android) .full-screen [dir="rtl"] .header-item-title {
+        flex: 1 1 auto;
+        flex-shrink: 1;
+        min-width: 0;
+        margin: 0;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    :global(.scratchy-android) .full-screen .header-item-help {
+        margin: 0;
+        order: 1;
+    }
+
+    :global(.scratchy-android) .full-screen .back-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

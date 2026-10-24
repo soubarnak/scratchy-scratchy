@@ -128,6 +128,14 @@ class Blocks extends React.Component {
             }
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
+        if (typeof this.props.flyoutScale === 'number' || typeof this.props.flyoutWidth === 'number') {
+            // scratch-blocks hardcodes the palette to scale 0.675 and 250px; phones need it narrower.
+            const flyout = this.workspace.getFlyout();
+            const {flyoutScale, flyoutWidth} = this.props;
+            if (typeof flyoutScale === 'number') flyout.getFlyoutScale = () => flyoutScale;
+            if (typeof flyoutWidth === 'number') flyout.getWidth = () => flyoutWidth;
+            this.workspace.resize();
+        }
         this.workspace.registerToolboxCategoryCallback(
             'VARIABLE',
             this.ScratchBlocks.ScratchVariables.getVariablesCategory
@@ -697,6 +705,8 @@ class Blocks extends React.Component {
             workspaceMetrics,
             colorMode,
             zoomStartScale,
+            flyoutScale,
+            flyoutWidth,
             ...props
         } = this.props;
          
@@ -777,7 +787,9 @@ Blocks.propTypes = {
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
     }),
-    zoomStartScale: PropTypes.number
+    zoomStartScale: PropTypes.number,
+    flyoutScale: PropTypes.number,
+    flyoutWidth: PropTypes.number
 };
 
 Blocks.defaultOptions = {

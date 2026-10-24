@@ -34,3 +34,25 @@
 [dir="rtl"] .detail-area {
     border-right: 1px solid $ui-black-transparent;
 }
+
+/*
+    Android app, phones: the paint and sound editors have a fixed minimum width,
+    so the detail area scrolls sideways instead of clipping them.
+*/
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .wrapper {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    :global(.scratchy-android) .detail-area {
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    :global(.scratchy-android) .detail-area > * {
+        flex-shrink: 0;
+    }
+}
