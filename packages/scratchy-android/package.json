@@ -1,6 +1,6 @@
 {
   "name": "scratchy-android",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Scratchy-Scratchy: Capacitor Android wrapper for scratch-gui",
   "license": "AGPL-3.0-only",
