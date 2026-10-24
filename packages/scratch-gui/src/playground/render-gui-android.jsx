@@ -6,6 +6,7 @@ import {EditorState, createStandaloneRoot, setAppElement} from '../index-standal
 import {setDownloadHandler} from '../lib/download-blob';
 import {setWidenFileAccept} from '../lib/file-accept';
 import {setLibraryAssetBase} from '../lib/legacy-library-asset-url';
+import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import {PLATFORM} from '../lib/platform.js';
 import {closeModal} from '../reducers/modals';
 
@@ -50,7 +51,10 @@ export default appTarget => {
     const state = new EditorState({
         showTelemetryModal: false
     });
-    const gui = createStandaloneRoot(state, appTarget);
+    const gui = createStandaloneRoot(state, appTarget, {
+        // Sets the default project id, which makes the project fetcher load the bundled default project.
+        wrappers: [HashParserHOC]
+    });
 
     // Back closes the topmost open modal/library first; otherwise confirm before leaving unsaved work.
     App.addListener('backButton', () => {
