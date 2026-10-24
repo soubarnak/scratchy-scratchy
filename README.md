@@ -1,56 +1,40 @@
-# scratch-editor: The Scratch Editor Monorepo
+# Scratchy-Scratchy
 
-If you'd like to use Scratch, please visit the [Scratch website](https://scratch.mit.edu/). You can build your own
-Scratch project by pressing "Create" on that website or by visiting <https://scratch.mit.edu/projects/editor/>.
+An unofficial, offline-capable Android app that wraps the [Scratch](https://scratch.mit.edu) editor
+from [scratchfoundation/scratch-editor](https://github.com/scratchfoundation/scratch-editor) with a
+phone and tablet interface. It is not affiliated with, endorsed by, or sponsored by the Scratch
+Foundation or MIT. "Scratch" and the Scratch Cat are trademarks of MIT; see `TRADEMARK`.
 
-This is a source code repository for the packages that make up the Scratch editor and a few additional support
-packages. Use this if you'd like to learn about how the Scratch editor works or to contribute to its development.
+Licensed under AGPL-3.0, like upstream. If you distribute the APK, you must offer this source.
+The upstream README is kept as `README.upstream.md`.
 
-## What's in this repository?
+## What is different from upstream
 
-The `packages` directory in this repository contains:
+- `packages/scratch-gui`: a new `BUILD_TYPE=android` build and entry (`src/playground/android.*`,
+  `render-gui-android.jsx`), a compact phone layout with a bottom nav (Code / Stage / Sprites),
+  a medium tablet layout, and touch tuning. All of it applies only when `platform === ANDROID`.
+- `packages/scratchy-android`: a Capacitor 8 project. Saving opens the Android share sheet, loading uses
+  the system file chooser, and the mic and camera permissions are declared.
+- All library sprites, costumes, sounds and backdrops are bundled in the APK, so the libraries work offline.
+  Hardware extensions that need Bluetooth are hidden.
 
-- `scratch-gui` provides the buttons, menus, and other elements that you interact with when creating and editing a
-  project. It's also the "glue" that brings most of the other modules together at runtime.
-- `scratch-media-lib-scripts` builds (or rebuilds) media libraries for the editor.
-- `scratch-paint` provides a way to draw vector (SVG) or bitmap (PNG) images for costumes and backdrops.
-- `scratch-render` draws backdrops, sprites, and clones on the stage.
-- `scratch-storage` helps load project assets like images and sounds. It also provides `ScratchFetch`, a customized
-  wrapper around `fetch`.
-- `scratch-svg-renderer` processes SVG (vector) images for use with Scratch projects.
-- `scratch-vm` is the virtual machine that runs Scratch projects.
-- `task-herder` manages queues of tasks with throttling and concurrency limits.
+## Build a debug APK
 
-_Please add to this list as more packages are migrated to the monorepo._
+Requirements: Node 24, JDK 21, Android SDK with platform 36 and build-tools.
 
-Each package has its own `README.md` file with more information about that package.
+```bash
+npm ci
+# build workspace dependencies (scratch-vm, scratch-render, scratch-storage, ...) first,
+# see the root package.json scripts
+export JAVA_HOME=/usr/lib/jvm/openjdk21 ANDROID_HOME=$HOME/Android/Sdk
+npm run build -w scratchy-android   # GUI build, fetch library assets, cap sync
+npm run apk -w scratchy-android     # packages/scratchy-android/android/app/build/outputs/apk/debug/app-debug.apk
+```
 
-## Monorepo migration
+The first build downloads about 1300 library assets from the Scratch CDN into
+`packages/scratchy-android/.asset-cache` (git-ignored).
 
-### What's going on?
+## Status
 
-We're migrating the Scratch editor packages into this monorepo. This will allow us to manage all the packages that
-make up the Scratch editor in one place, making  it easier to manage dependencies and make changes that affect
-multiple packages.
-
-### Why are there only a few packages in this repo?
-
-We're migrating packages in stages. The current plan, which is subject to change, has us migrating repositories in
-four batches. We plan to complete the migration within 2025.
-
-### What will happen to the existing repositories?
-
-The existing repositories will be archived and made read-only. Those repositories contain valuable work and
-information, including but not limited to issues and pull requests. We plan to keep that information available for
-reference, and to selectively migrate it to this new repository.
-
-## Thank you
-
-Scratch would not be what it is today without help from the global community of Scratchers and open-source
-contributors. Thank you for your contributions and support. _[Scratch on!](https://scratch.mit.edu/projects/65347738/fullscreen/)_
-
-## Donate
-
-We provide [Scratch](https://scratch.mit.edu) free of charge, and want to keep it that way! Please consider making a
-[donation](https://www.scratchfoundation.org/donate) to support our continued engineering, design, community, and
-resource development efforts. Donations of any size are appreciated. Thank you!
+Tested on Android 17 emulators (phone and tablet). Not tested on a physical device. Recording sounds,
+camera and video sensing, and the extension library are untested.
