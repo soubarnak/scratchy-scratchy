@@ -117,6 +117,12 @@ export class LegacyStorage implements GUIStorage {
             this.getProjectUpdateConfig.bind(this)
         );
 
+        // Registered first so bundled library assets load locally; anything else falls through to the asset host.
+        storage.addWebStore(
+            [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
+            this.getLocalAssetGetConfig.bind(this)
+        );
+
         storage.addWebStore(
             [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
             this.getAssetGetConfig.bind(this),
@@ -153,11 +159,13 @@ export class LegacyStorage implements GUIStorage {
         };
     }
 
+    private getLocalAssetGetConfig (asset: Asset) {
+        // Offline builds bundle the library assets; a falsy config makes storage skip this store.
+        if (!hasLibraryAssetBase()) return null;
+        return buildLibraryAssetUrl(String(asset.assetId), String(asset.dataFormat));
+    }
+
     private getAssetGetConfig (asset: Asset) {
-        // Offline builds bundle the library assets: load them locally, incl. sprites/costumes added from libraries.
-        if (hasLibraryAssetBase()) {
-            return buildLibraryAssetUrl(String(asset.assetId), String(asset.dataFormat));
-        }
         return `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
     }
 

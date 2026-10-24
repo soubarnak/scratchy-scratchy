@@ -5,6 +5,7 @@ import {Share} from '@capacitor/share';
 import {EditorState, createStandaloneRoot, setAppElement} from '../index-standalone';
 import {setDownloadHandler} from '../lib/download-blob';
 import {setWidenFileAccept} from '../lib/file-accept';
+import {requestCloseMenus} from '../lib/close-menus';
 import {setLibraryAssetBase} from '../lib/legacy-library-asset-url';
 import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import {PLATFORM} from '../lib/platform.js';
@@ -112,6 +113,7 @@ export default appTarget => {
             store.dispatch(closeLoginMenu());
             return;
         }
+        if (requestCloseMenus()) return;
         const openModals = modalOrder.filter(name => modals[name]);
         if (openModals.length > 0) {
             store.dispatch(closeModal(openModals[openModals.length - 1]));

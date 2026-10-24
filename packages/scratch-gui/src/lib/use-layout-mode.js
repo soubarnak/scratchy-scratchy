@@ -41,7 +41,11 @@ const useLayoutMode = enabled => {
 
     useEffect(() => {
         if (!enabled) {
-            setState({mode: LAYOUT_MODES.full, width: Infinity, stageScale: null});
+            setState(prev => (
+                prev.mode === LAYOUT_MODES.full && prev.width === Infinity && prev.stageScale === null ?
+                    prev :
+                    {mode: LAYOUT_MODES.full, width: Infinity, stageScale: null}
+            ));
             return;
         }
         const update = () => setState(prev => {

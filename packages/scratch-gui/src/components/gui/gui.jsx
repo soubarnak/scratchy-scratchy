@@ -290,6 +290,8 @@ const GUIComponent = props => {
     }
 
     const compactStageScale = isCompact ? stageScale : null;
+    // Palette scale/width are applied at inject time, so a layout change has to re-inject the workspace.
+    const blocksLayoutMode = isAndroid ? layoutMode : LAYOUT_MODES.full;
     const ScaleProvider = CompactStageScaleContext.Provider;
 
     return (<ScaleProvider value={compactStageScale}><MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
@@ -553,7 +555,7 @@ const GUIComponent = props => {
                                         element="section"
                                     >
                                         <Blocks
-                                            key={`${blocksId}/${colorMode}/${theme}`}
+                                            key={`${blocksId}/${colorMode}/${theme}/${blocksLayoutMode}`}
                                             canUseCloud={canUseCloud}
                                             grow={1}
                                             isVisible={blocksTabVisible}
