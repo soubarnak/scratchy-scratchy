@@ -46,7 +46,8 @@ export default appTarget => {
     setAppElement(appTarget);
     setDownloadHandler(shareBlob);
     setWidenFileAccept(true);
-    setLibraryAssetBase('./library-assets/');
+    // Absolute: scratch-storage resolves relative URLs against the loaded chunk (chunks/), not the page.
+    setLibraryAssetBase(new URL('library-assets/', document.baseURI).href);
 
     const state = new EditorState({
         showTelemetryModal: false

@@ -6,7 +6,7 @@ import {LegacyBackpackStorage} from './legacy-backpack-storage';
 import CloudProvider from './cloud-provider';
 
 import saveProjectToServer from '../lib/save-project-to-server';
-import {buildLibraryAssetUrl} from './legacy-library-asset-url';
+import {buildLibraryAssetUrl, hasLibraryAssetBase} from './legacy-library-asset-url';
 
 export class LegacyStorage implements GUIStorage {
     private projectHost?: string;
@@ -154,6 +154,10 @@ export class LegacyStorage implements GUIStorage {
     }
 
     private getAssetGetConfig (asset: Asset) {
+        // Offline builds bundle the library assets: load them locally, incl. sprites/costumes added from libraries.
+        if (hasLibraryAssetBase()) {
+            return buildLibraryAssetUrl(String(asset.assetId), String(asset.dataFormat));
+        }
         return `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
     }
 

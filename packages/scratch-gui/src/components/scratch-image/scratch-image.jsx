@@ -39,8 +39,10 @@ class ScratchImage extends React.PureComponent {
             ++this._currentJobs;
             legacyConfig.storage.scratchStorage
                 .load(imageSource.assetType, imageSource.assetId)
+                // A failed load must not stall the queue.
+                .catch(() => null)
                 .then(asset => {
-                    if (!nextImage.wasUnmounted) {
+                    if (asset && !nextImage.wasUnmounted) {
                         const dataURI = asset.encodeDataURI();
 
                         nextImage.setState({

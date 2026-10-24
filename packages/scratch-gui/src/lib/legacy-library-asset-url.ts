@@ -12,6 +12,12 @@ export const setLibraryAssetBase = (base: string): void => {
 };
 
 /**
+ * Whether library assets are served from a local base instead of the network.
+ * @returns {boolean} - true when a local base is set.
+ */
+export const hasLibraryAssetBase = (): boolean => !!libraryAssetBase;
+
+/**
  * Build the URL a library asset is fetched from, in the shape Scratch's asset service uses.
  * @param {string} assetId - the md5 of the asset.
  * @param {string} dataFormat - the asset's file extension.
