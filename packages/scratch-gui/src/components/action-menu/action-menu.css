@@ -205,3 +205,14 @@ $arrow-rounding: 0.125rem;
     top: $arrow-inset !important;
     transform: rotate(-45deg) !important;
 }
+/* Android app: 44px touch targets for the expanded buttons */
+:global(.scratchy-android) .more-button {
+    width: $main-button-size;
+    height: $main-button-size;
+}
+
+:global(.scratchy-android) .more-buttons-outer {
+    width: $main-button-size;
+    margin-left: 0;
+    margin-right: 0;
+}

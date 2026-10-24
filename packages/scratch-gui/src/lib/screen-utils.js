@@ -1,4 +1,9 @@
-import layout, {STAGE_DISPLAY_SCALES, STAGE_SIZE_MODES, STAGE_DISPLAY_SIZES} from '../lib/layout-constants';
+import layout, {
+    LAYOUT_MODES,
+    STAGE_DISPLAY_SCALES,
+    STAGE_SIZE_MODES,
+    STAGE_DISPLAY_SIZES
+} from '../lib/layout-constants';
 
 /**
  * @typedef {object} StageDimensions
@@ -23,9 +28,20 @@ const STAGE_DIMENSION_DEFAULTS = {
  * Resolve the current GUI and browser state to an actual stage size enum value.
  * @param {STAGE_SIZE_MODES} stageSizeMode - the state of the stage size toggle button.
  * @param {boolean} isFullSize - true if the window is large enough for the large stage at its full size.
+ * @param {LAYOUT_MODES} [layoutMode] - responsive layout mode; only the Android platform passes anything but full.
+ * @param {number} [viewportWidth] - window width, used by the medium layout.
  * @returns {STAGE_DISPLAY_SIZES} - the stage size enum value we should use in this situation.
  */
-const resolveStageSize = (stageSizeMode, isFullSize) => {
+const resolveStageSize = (stageSizeMode, isFullSize, layoutMode = LAYOUT_MODES.full, viewportWidth = Infinity) => {
+    if (layoutMode === LAYOUT_MODES.compact) {
+        return STAGE_DISPLAY_SIZES.compact;
+    }
+    if (layoutMode === LAYOUT_MODES.medium) {
+        const isNarrow = viewportWidth <= layout.mediumSmallStageMaxWidth;
+        return stageSizeMode === STAGE_SIZE_MODES.small || isNarrow ?
+            STAGE_DISPLAY_SIZES.small :
+            STAGE_DISPLAY_SIZES.largeConstrained;
+    }
     if (stageSizeMode === STAGE_SIZE_MODES.small) {
         return STAGE_DISPLAY_SIZES.small;
     }
@@ -39,9 +55,10 @@ const resolveStageSize = (stageSizeMode, isFullSize) => {
  * Retrieve info used to determine the actual stage size based on the current GUI and browser state.
  * @param {STAGE_DISPLAY_SIZES} stageSize - the current fully-resolved stage size.
  * @param {boolean} isFullScreen - true if full-screen mode is enabled.
+ * @param {number} [compactScale] - scale to use for the compact (phone) stage size.
  * @returns {StageDimensions} - an object describing the dimensions of the stage.
  */
-const getStageDimensions = (stageSize, isFullScreen) => {
+const getStageDimensions = (stageSize, isFullScreen, compactScale) => {
     const stageDimensions = {
         heightDefault: layout.standardStageHeight,
         widthDefault: layout.standardStageWidth,
@@ -64,7 +81,9 @@ const getStageDimensions = (stageSize, isFullScreen) => {
 
         stageDimensions.scale = stageDimensions.width / stageDimensions.widthDefault;
     } else {
-        stageDimensions.scale = STAGE_DISPLAY_SCALES[stageSize];
+        stageDimensions.scale = stageSize === STAGE_DISPLAY_SIZES.compact && compactScale ?
+            compactScale :
+            STAGE_DISPLAY_SCALES[stageSize];
         stageDimensions.height = stageDimensions.scale * stageDimensions.heightDefault;
         stageDimensions.width = stageDimensions.scale * stageDimensions.widthDefault;
     }
@@ -74,6 +93,20 @@ const getStageDimensions = (stageSize, isFullScreen) => {
     stageDimensions.width = Math.round(stageDimensions.width);
 
     return stageDimensions;
+};
+
+/**
+ * Work out how much to scale the stage so it fits a phone-sized pane.
+ * @param {number} paneWidth - width available to the stage, in px.
+ * @param {number} paneHeight - height available to the stage, in px.
+ * @returns {number} - scale factor from the default stage size, never below 0.25 or above 1.5.
+ */
+const getCompactStageScale = (paneWidth, paneHeight) => {
+    const fit = Math.min(
+        paneWidth / layout.standardStageWidth,
+        paneHeight / layout.standardStageHeight
+    );
+    return Math.min(1.5, Math.max(0.25, fit));
 };
 
 /**
@@ -98,6 +131,7 @@ const stageSizeToTransform = ({width, height, widthDefault, heightDefault}) => {
 };
 
 export {
+    getCompactStageScale,
     getStageDimensions,
     resolveStageSize,
     stageSizeToTransform

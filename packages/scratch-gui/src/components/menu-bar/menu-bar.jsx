@@ -65,7 +65,7 @@ import dropdownCaret from './dropdown-caret.svg';
 import debugIcon from '../debug-modal/icons/icon--debug.svg';
 
 import scratchLogo from './scratch-logo.svg';
-import scratchLogoAndroid from './scratch-logo-android.svg';
+import scratchLogoAndroid from './scratchy-logo.svg';
 import ninetiesLogo from './nineties_logo.svg';
 import catLogo from './cat_logo.svg';
 import prehistoricLogo from './prehistoric-logo.svg';
@@ -334,7 +334,7 @@ class MenuBar extends React.Component {
                         >
                             <img
                                 id="logo_img"
-                                alt="Scratch"
+                                alt={this.props.platform === PLATFORM.ANDROID ? 'Scratchy-Scratchy' : 'Scratch'}
                                 className={classNames(styles.scratchLogo, {
                                     [styles.clickable]: typeof this.props.onClickLogo !== 'undefined'
                                 })}
@@ -380,7 +380,7 @@ class MenuBar extends React.Component {
                         />)}
                     </div>
                     {this.props.canEditTitle ? (
-                        <div className={classNames(styles.menuBarItem, styles.growable)}>
+                        <div className={classNames(styles.menuBarItem, styles.growable, styles.hideCompact)}>
                             <MenuBarItemTooltip
                                 enable
                                 id="title-field"
@@ -400,7 +400,7 @@ class MenuBar extends React.Component {
                             avatarBadge={this.props.authorAvatarBadge}
                         />
                     ) : null)}
-                    <div className={classNames(styles.menuBarItem)}>
+                    <div className={classNames(styles.menuBarItem, styles.hideCompact)}>
                         {this.props.canShare ? (
                             (this.props.isShowingProject || this.props.isUpdating) && (
                                 <ProjectWatcher
@@ -431,7 +431,7 @@ class MenuBar extends React.Component {
                         )}
                         {this.props.canRemix ? remixButton : []}
                     </div>
-                    <div className={classNames(styles.menuBarItem, styles.communityButtonWrapper)}>
+                    <div className={classNames(styles.menuBarItem, styles.communityButtonWrapper, styles.hideCompact)}>
                         {this.props.enableCommunity ? (
                             (this.props.isShowingProject || this.props.isUpdating) && (
                                 <ProjectWatcher onDoneUpdating={this.props.onSeeCommunity}>
@@ -455,8 +455,8 @@ class MenuBar extends React.Component {
                             </MenuBarItemTooltip>
                         ) : [])}
                     </div>
-                    <Divider className={classNames(styles.divider)} />
-                    <div className={styles.fileGroup}>
+                    <Divider className={classNames(styles.divider, styles.hideCompact)} />
+                    <div className={classNames(styles.fileGroup, styles.hideCompact)}>
                         <button
                             aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                             className={
@@ -490,7 +490,7 @@ class MenuBar extends React.Component {
 
                 {/* show the proper UI in the account menu, given whether the user is
                 logged in, and whether a session is available to log in with */}
-                <div className={styles.accountInfoGroup}>
+                <div className={classNames(styles.accountInfoGroup, styles.hideCompact)}>
                     <div className={styles.menuBarItem}>
                         {this.props.canSave && (
                             <SaveStatus className={classNames(styles.hoverable, styles.menuBarItem)} />

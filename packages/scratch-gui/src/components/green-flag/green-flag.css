@@ -24,3 +24,10 @@
 .green-flag.is-active {
     background-color: $looks-transparent;
 }
+
+/* Android app: touch-sized hit target */
+:global(.scratchy-android) .green-flag {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.5rem;
+}

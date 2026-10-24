@@ -99,3 +99,9 @@
     min-width: auto;
     min-height: auto;
 }
+
+/* Android app: the workspace handles touch gestures (drag, pan, pinch zoom) itself */
+:global(.scratchy-android) .blocks {
+    touch-action: none;
+    -webkit-touch-callout: none;
+}

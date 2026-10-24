@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useState} from 'react';
 import {defineMessages, FormattedMessage, useIntl} from 'react-intl';
 import {connect} from 'react-redux';
 import MediaQuery from 'react-responsive';
@@ -29,11 +29,19 @@ import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
+import Controls from '../../containers/controls.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import MobileNav, {MOBILE_PANES} from '../mobile-nav/mobile-nav.jsx';
 
-import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
+import layout, {
+    BLOCKS_COMPACT_SCALE,
+    BLOCKS_MEDIUM_SCALE,
+    LAYOUT_MODES,
+    STAGE_SIZE_MODES
+} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
+import {useLayoutMode} from '../../lib/use-layout-mode';
 import {colorModeMap} from '../../lib/settings/color-mode/index.js';
 import {DEFAULT_THEME, themeMap} from '../../lib/settings/theme/index.js';
 import {AccountMenuOptionsPropTypes} from '../../lib/account-menu-options';
@@ -48,6 +56,7 @@ import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
 import {MenuRefProvider} from '../../contexts/menu-ref-context.jsx';
 import {ModalFocusProvider} from '../../contexts/modal-focus-context.jsx';
+import {CompactStageScaleContext} from '../../contexts/compact-stage-scale-context.js';
 
 const ariaMessages = defineMessages({
     menuBar: {
@@ -230,6 +239,30 @@ const GUIComponent = props => {
         }
     }, [theme, hasActiveMembership, props.setTheme]);
 
+    // Responsive layouts only apply to the Android app; web and desktop keep the upstream layout.
+    const isAndroid = props.platform === PLATFORM.ANDROID;
+    const {mode: layoutMode, width: viewportWidth, stageScale} = useLayoutMode(isAndroid);
+    const isCompact = isAndroid && layoutMode === LAYOUT_MODES.compact;
+    const isMedium = isAndroid && layoutMode === LAYOUT_MODES.medium;
+    let blocksZoomStartScale;
+    if (isCompact) blocksZoomStartScale = BLOCKS_COMPACT_SCALE;
+    else if (isMedium) blocksZoomStartScale = BLOCKS_MEDIUM_SCALE;
+    const [mobilePane, setMobilePane] = useState(MOBILE_PANES.code);
+
+    useEffect(() => {
+        // Global hook for the css of other components (`:global(.scratchy-android)`).
+        document.documentElement.classList.toggle('scratchy-android', isAndroid);
+        return () => document.documentElement.classList.remove('scratchy-android');
+    }, [isAndroid]);
+
+    useEffect(() => {
+        if (!isCompact) return;
+        // The blocks workspace, the paint editor and the stage renderer measure themselves on window resize,
+        // so tell them when a pane becomes visible or the stage scale changes.
+        const frame = requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+        return () => cancelAnimationFrame(frame);
+    }, [isCompact, mobilePane, stageScale]);
+
     const tabClassNames = {
         tabs: styles.tabs,
         tab: classNames(tabStyles.reactTabsTab, styles.tab),
@@ -250,11 +283,43 @@ const GUIComponent = props => {
         isRendererSupported = Renderer.isSupported();
     }
 
-    return (<MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
-        const stageSize = resolveStageSize(stageSizeMode, isFullSize);
+    const compactStageScale = isCompact ? stageScale : null;
+    const ScaleProvider = CompactStageScaleContext.Provider;
+
+    return (<ScaleProvider value={compactStageScale}><MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
+        const stageSize = resolveStageSize(
+            stageSizeMode,
+            isFullSize,
+            isAndroid ? layoutMode : LAYOUT_MODES.full,
+            viewportWidth
+        );
         const boxStyles = classNames(styles.bodyWrapper, {
             [styles.bodyWrapperWithoutMenuBar]: menuBarHidden
         });
+        const paneClass = pane => classNames({
+            [styles.mobilePane]: isCompact,
+            [styles.mobilePaneHidden]: isCompact && mobilePane !== pane
+        });
+        const stageWrapper = (
+            <StageWrapper
+                isFullScreen={isFullScreen}
+                isRendererSupported={isRendererSupported}
+                isRtl={isRtl}
+                isCreating={isCreating}
+                stageSize={stageSize}
+                vm={vm}
+                ariaRole="region"
+                ariaLabel={intl.formatMessage(ariaMessages.stage)}
+                manuallySaveThumbnails={manuallySaveThumbnails}
+                onSetManualThumbnail={onSetManualThumbnail}
+                onSetManualThumbnailButtonClick={onSetManualThumbnailButtonClick}
+                loading={loading}
+                showNewFeatureCallouts={showNewFeatureCallouts}
+                userOwnsProject={userOwnsProject}
+                username={username}
+                onUpdateProjectThumbnail={onUpdateProjectThumbnail}
+            />
+        );
 
         return isPlayerOnly ? (
             <StageWrapper
@@ -331,7 +396,7 @@ const GUIComponent = props => {
                         />
                     ) : null}
                     {/* TODO - in case of moving MenuRefProvider which seems likely,
-                    make sure to move it from tests as well */}
+                make sure to move it from tests as well */}
                     {!menuBarHidden && <MenuRefProvider>
                         <MenuBar
                             ariaRole="banner"
@@ -375,11 +440,16 @@ const GUIComponent = props => {
                         />
                     </MenuRefProvider>
                     }
-                    <Box className={classNames(boxStyles, styles.flexWrapper)}>
+                    <Box
+                        className={classNames(boxStyles, styles.flexWrapper, {
+                            [styles.androidCompact]: isCompact,
+                            [styles.androidMedium]: isMedium
+                        })}
+                    >
                         <Box
                             role="main"
                             aria-label={intl.formatMessage(ariaMessages.editor)}
-                            className={styles.editorWrapper}
+                            className={classNames(styles.editorWrapper, paneClass(MOBILE_PANES.code))}
                             element="main"
                         >
                             <Tabs
@@ -488,6 +558,7 @@ const GUIComponent = props => {
                                             theme={theme}
                                             vm={vm}
                                             colorMode={colorMode}
+                                            zoomStartScale={blocksZoomStartScale}
                                         />
                                     </Box>
                                     <ExtensionsButton
@@ -530,6 +601,11 @@ const GUIComponent = props => {
                                     ariaLabel={intl.formatMessage(ariaMessages.backpack)}
                                 />
                             ) : null}
+                            {isCompact && blocksTabVisible ? (
+                                <Box className={styles.floatingControls}>
+                                    <Controls vm={vm} />
+                                </Box>
+                            ) : null}
                         </Box>
 
                         <Box
@@ -538,26 +614,13 @@ const GUIComponent = props => {
                             className={classNames(styles.stageAndTargetWrapper, styles[stageSize])}
                             element="aside"
                         >
-                            <StageWrapper
-                                isFullScreen={isFullScreen}
-                                isRendererSupported={isRendererSupported}
-                                isRtl={isRtl}
-                                isCreating={isCreating}
-                                stageSize={stageSize}
-                                vm={vm}
-                                ariaRole="region"
-                                ariaLabel={intl.formatMessage(ariaMessages.stage)}
-                                manuallySaveThumbnails={manuallySaveThumbnails}
-                                onSetManualThumbnail={onSetManualThumbnail}
-                                onSetManualThumbnailButtonClick={onSetManualThumbnailButtonClick}
-                                loading={loading}
-                                showNewFeatureCallouts={showNewFeatureCallouts}
-                                userOwnsProject={userOwnsProject}
-                                username={username}
-                                onUpdateProjectThumbnail={onUpdateProjectThumbnail}
-                            />
+                            {isAndroid ? (
+                                <Box className={classNames(styles.stagePane, paneClass(MOBILE_PANES.stage))}>
+                                    {stageWrapper}
+                                </Box>
+                            ) : stageWrapper}
                             <Box
-                                className={styles.targetWrapper}
+                                className={classNames(styles.targetWrapper, paneClass(MOBILE_PANES.sprites))}
                                 role="region"
                                 aria-label={intl.formatMessage(ariaMessages.targetPane)}
                                 element="section"
@@ -570,12 +633,18 @@ const GUIComponent = props => {
                                 />
                             </Box>
                         </Box>
+                        {isCompact ? (
+                            <MobileNav
+                                activePane={mobilePane}
+                                onSelectPane={setMobilePane}
+                            />
+                        ) : null}
                     </Box>
                     <DragLayer />
                 </Box>
             </ModalFocusProvider>
         );
-    }}</MediaQuery>);
+    }}</MediaQuery></ScaleProvider>);
 };
 
 GUIComponent.propTypes = {

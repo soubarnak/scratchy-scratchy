@@ -110,6 +110,7 @@ export default eslintConfigScratch.defineConfig(
     },
     globalIgnores([
         'build/**/*',
+        'build-android/**/*',
         'dist/**/*',
         'node_modules/**/*'
     ])

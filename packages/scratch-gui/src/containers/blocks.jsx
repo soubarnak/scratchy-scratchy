@@ -108,7 +108,12 @@ class Blocks extends React.Component {
         this.ScratchBlocks.ScratchProcedures.externalProcedureDefCallback = this.props.onActivateCustomProcedures;
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
 
+        // defaultsDeep gives precedence to earlier sources, so an explicit start scale has to come first.
+        const scaleOverride = typeof this.props.zoomStartScale === 'number' ?
+            {zoom: {startScale: this.props.zoomStartScale}} :
+            {};
         const workspaceConfig = defaultsDeep({},
+            scaleOverride,
             Blocks.defaultOptions,
             this.props.options,
             {
@@ -691,6 +696,7 @@ class Blocks extends React.Component {
             useCatBlocks,
             workspaceMetrics,
             colorMode,
+            zoomStartScale,
             ...props
         } = this.props;
          
@@ -770,7 +776,8 @@ Blocks.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
-    })
+    }),
+    zoomStartScale: PropTypes.number
 };
 
 Blocks.defaultOptions = {

@@ -27,3 +27,10 @@
 .stop-all.is-active {
     opacity: 1;
 }
+
+/* Android app: touch-sized hit target */
+:global(.scratchy-android) .stop-all {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.5rem;
+}

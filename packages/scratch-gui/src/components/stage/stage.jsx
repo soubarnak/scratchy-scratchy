@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useContext} from 'react';
 import classNames from 'classnames';
 
 import Box from '../box/box.jsx';
@@ -10,6 +10,7 @@ import TargetHighlight from '../../containers/target-highlight.jsx';
 import GreenFlagOverlay from '../../containers/green-flag-overlay.jsx';
 import Question from '../../containers/question.jsx';
 import MicIndicator from '../mic-indicator/mic-indicator.jsx';
+import {CompactStageScaleContext} from '../../contexts/compact-stage-scale-context.js';
 import {STAGE_DISPLAY_SIZES} from '../../lib/layout-constants.js';
 import {getStageDimensions} from '../../lib/screen-utils.js';
 import styles from './stage.css';
@@ -32,7 +33,8 @@ const StageComponent = props => {
         ...boxProps
     } = props;
 
-    const stageDimensions = getStageDimensions(stageSize, isFullScreen);
+    const compactScale = useContext(CompactStageScaleContext);
+    const stageDimensions = getStageDimensions(stageSize, isFullScreen, compactScale);
 
     return (
         <React.Fragment>

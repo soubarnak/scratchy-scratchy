@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 32" role="img" aria-label="Scratchy-Scratchy">
+  <title>Scratchy-Scratchy</title>
+  <!-- Stylised stacked blocks: an original mark, not derived from Scratch artwork -->
+  <g>
+    <rect x="2" y="2" width="14" height="9" rx="2.5" fill="#ffab19"/>
+    <rect x="2" y="2" width="5" height="3" rx="1.5" fill="#ffffff" opacity="0.55"/>
+    <rect x="6" y="12" width="14" height="9" rx="2.5" fill="#4c97ff"/>
+    <rect x="6" y="12" width="5" height="3" rx="1.5" fill="#ffffff" opacity="0.55"/>
+    <rect x="10" y="22" width="14" height="9" rx="2.5" fill="#59c059"/>
+    <rect x="10" y="22" width="5" height="3" rx="1.5" fill="#ffffff" opacity="0.55"/>
+  </g>
+  <text x="32" y="22" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" textLength="134" lengthAdjust="spacingAndGlyphs">Scratchy-Scratchy</text>
+</svg>

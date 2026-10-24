@@ -1,0 +1,61 @@
+@import "../../css/colors.css";
+@import "../../css/units.css";
+@import "../../css/z-index.css";
+
+/* Height of the bar itself, without the bottom safe-area inset. Keep in sync with gui.css. */
+$mobile-nav-height: 3.5rem;
+
+.mobile-nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: $z-index-menu-bar;
+
+    display: flex;
+    height: calc($mobile-nav-height + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    box-sizing: border-box;
+
+    background-color: $ui-white;
+    border-top: 1px solid $ui-black-transparent;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.nav-button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    min-height: 44px;
+
+    background: none;
+    border: none;
+    border-top: 3px solid transparent;
+    color: $text-primary-transparent;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-button.active {
+    color: $motion-primary;
+    border-top-color: $motion-primary;
+}
+
+.nav-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+}
+
+.nav-label {
+    line-height: 1;
+}

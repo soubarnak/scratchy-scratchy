@@ -333,7 +333,9 @@ const StageHeaderComponent = function (props) {
                             side={PopupSide.DOWN}
                             align={PopupAlign.LEFT}
                         />
-                        {stageControls}
+                        <div className={styles.stageSizeToggleGroup}>
+                            {stageControls}
+                        </div>
                         <div className={styles.rightSection}>
                             <Button
                                 className={styles.stageButton}

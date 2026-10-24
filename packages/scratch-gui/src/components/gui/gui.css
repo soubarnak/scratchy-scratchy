@@ -279,3 +279,114 @@ body .alerts-container {
 :global(.ReactModal__Body--open) {
     overflow: hidden;
 }
+
+/*
+    Android app: responsive layouts. The classes below are only applied when the GUI runs with
+    `platform === PLATFORM.ANDROID`, so web and desktop keep the layout above.
+    Medium is a tablet / small laptop (768px up to the full-size layout); compact is a phone
+    (max-width 767px or max-height 500px). See `layout-constants.js`.
+*/
+$mobile-nav-height: 3.5rem; /* keep in sync with mobile-nav.css */
+
+/* Leave room for the status bar / display cutout when the app draws edge to edge */
+:global(.scratchy-android) .body-wrapper {
+    height: calc(100% - $menu-bar-height - env(safe-area-inset-top, 0px));
+}
+
+:global(.scratchy-android) .body-wrapper-without-menu-bar {
+    height: 100%;
+}
+
+/* The Scratch Cat watermark is not part of this app */
+:global(.scratchy-android) body .watermark {
+    display: none;
+}
+
+/* Drop the 1024px floor so the editor can shrink to the space the stage leaves over */
+.android-medium .editor-wrapper,
+.android-compact .editor-wrapper {
+    flex-basis: 0;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.android-medium .tab-list,
+.android-compact .tab-list {
+    width: auto;
+}
+
+.android-medium .tab,
+.android-compact .tab {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.android-compact {
+    /* The three panes are stacked on top of each other, the bottom nav switches between them */
+    position: relative;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+}
+
+.android-compact .tab,
+.android-compact .tab.is-selected {
+    height: 100%;
+    min-height: 44px;
+}
+
+/* Let the stage and the sprite list be laid out independently of their parent */
+.android-compact .stage-and-target-wrapper {
+    display: contents;
+}
+
+.android-compact .mobile-pane {
+    position: absolute;
+    top: 0;
+    left: env(safe-area-inset-left, 0px);
+    right: env(safe-area-inset-right, 0px);
+    bottom: calc($mobile-nav-height + env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    background-color: $ui-primary;
+}
+
+/*
+    Hidden panes stay mounted and laid out (so the blocks workspace and the renderer keep their size),
+    they are only made invisible and untouchable.
+*/
+.android-compact .mobile-pane-hidden {
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.android-compact .stage-pane {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: auto;
+    padding: $space;
+}
+
+.android-compact .target-wrapper {
+    padding-left: $space;
+    padding-right: $space;
+}
+
+.floating-controls {
+    position: absolute;
+    top: calc($stage-menu-height + $space);
+    right: $space;
+    z-index: 50; /* above the toolbox and flyout (z-index 40) */
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2rem;
+    background-color: $ui-white;
+    border: 1px solid $ui-black-transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+[dir="rtl"] .floating-controls {
+    right: auto;
+    left: $space;
+}

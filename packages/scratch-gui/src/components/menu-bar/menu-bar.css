@@ -236,3 +236,35 @@
         margin-right: 0;
     }
 }
+
+/*
+    Android app. Keep the breakpoints in sync with layout-constants.js.
+    Leave room for the status bar / display cutout, and keep touch targets at least 44px tall.
+*/
+:global(.scratchy-android) .menu-bar {
+    height: calc($menu-bar-height + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    -webkit-touch-callout: none;
+}
+
+:global(.scratchy-android) .menu-bar-item {
+    min-height: 44px;
+}
+
+@media (max-width: 767px), (max-height: 500px) {
+    /* Phone: logo, File, Edit and the language / theme menu only */
+    :global(.scratchy-android) .hide-compact {
+        display: none;
+    }
+
+    :global(.scratchy-android) .file-group .menu-bar-item {
+        margin: 0;
+        padding: 0 0.625rem;
+    }
+
+    :global(.scratchy-android) .scratch-logo {
+        height: 1.25rem;
+    }
+}

@@ -129,3 +129,23 @@
     background: black;
     filter: opacity(15%) brightness(0%);
 }
+
+/*
+    Android app: smaller tiles on tablets, where the sprite list is narrow, and 44px+ touch targets.
+    Keep the breakpoints in sync with layout-constants.js.
+*/
+@media (max-width: 1095px) {
+    :global(.scratchy-android) .sprite-wrapper {
+        width: calc((100% / 3) - $space);
+        min-width: 3.25rem;
+        min-height: 3.5rem;
+    }
+}
+
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .sprite-wrapper {
+        width: calc((100% / 4) - $space);
+        min-width: 4rem;
+        min-height: 4.5rem;
+    }
+}

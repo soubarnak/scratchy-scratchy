@@ -84,3 +84,17 @@
     gap: 0.5rem;
     background-color: transparent;
 }
+
+/* Android app: touch-sized hit targets (44px) */
+:global(.scratchy-android) .stage-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.5rem;
+}
+
+/* The stage fits its pane on phones, so the size toggle does nothing there. Keep in sync with layout-constants.js */
+@media (max-width: 767px), (max-height: 500px) {
+    :global(.scratchy-android) .stage-size-toggle-group {
+        display: none;
+    }
+}
