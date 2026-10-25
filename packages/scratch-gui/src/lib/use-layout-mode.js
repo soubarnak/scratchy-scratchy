@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import layout, {LAYOUT_MODES} from './layout-constants';
 import {getCompactStageScale} from './screen-utils';
 
@@ -27,6 +27,18 @@ const measure = () => {
     };
 };
 
+const isEditingField = element => Boolean(element && (
+    element.isContentEditable ||
+    element.matches('input, textarea, select, [contenteditable="true"], [role="textbox"]') ||
+    element.closest('.blocklyHtmlInput')
+));
+
+const shouldDeferModeChange = (previous, next, activeElement) => (
+    previous.width === next.width &&
+    previous.mode !== next.mode &&
+    isEditingField(activeElement)
+);
+
 /**
  * Track the responsive layout mode of the window.
  * Always reports `full` when `enabled` is false, so non-Android platforms keep the upstream layout.
@@ -38,32 +50,78 @@ const useLayoutMode = enabled => {
     const [state, setState] = useState(() => (
         enabled ? measure() : {mode: LAYOUT_MODES.full, width: Infinity, stageScale: null}
     ));
+    const currentState = useRef(state);
+    currentState.current = state;
 
     useEffect(() => {
         if (!enabled) {
-            setState(prev => (
-                prev.mode === LAYOUT_MODES.full && prev.width === Infinity && prev.stageScale === null ?
-                    prev :
-                    {mode: LAYOUT_MODES.full, width: Infinity, stageScale: null}
-            ));
+            const fullLayout = {mode: LAYOUT_MODES.full, width: Infinity, stageScale: null};
+            currentState.current = fullLayout;
+            setState(fullLayout);
             return;
         }
-        const update = () => setState(prev => {
+
+        let pendingMode = null;
+        let pendingFrames = 0;
+        let pendingFrame = null;
+        let isMounted = true;
+
+        const update = force => {
             const next = measure();
-            return prev.mode === next.mode && prev.width === next.width && prev.stageScale === next.stageScale ?
-                prev :
-                next;
-        });
-        update();
-        window.addEventListener('resize', update);
-        window.addEventListener('orientationchange', update);
+            const previous = currentState.current;
+            if (previous.mode === next.mode) {
+                pendingMode = null;
+                pendingFrames = 0;
+                if (previous.width !== next.width || previous.stageScale !== next.stageScale) {
+                    currentState.current = next;
+                    setState(next);
+                }
+                return;
+            }
+            if (shouldDeferModeChange(previous, next, document.activeElement)) {
+                pendingMode = null;
+                pendingFrames = 0;
+                return;
+            }
+            if (!force) {
+                if (pendingMode === next.mode) {
+                    pendingFrames += 1;
+                } else {
+                    pendingMode = next.mode;
+                    pendingFrames = 1;
+                }
+                if (pendingFrames < 2) {
+                    if (pendingFrame === null) {
+                        pendingFrame = window.requestAnimationFrame(() => {
+                            pendingFrame = null;
+                            if (isMounted) update(false);
+                        });
+                    }
+                    return;
+                }
+            }
+            pendingMode = null;
+            pendingFrames = 0;
+            currentState.current = next;
+            setState(next);
+        };
+        const handleResize = () => update(false);
+        const handleOrientationChange = () => update(true);
+
+        update(true);
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleOrientationChange);
+        document.addEventListener('focusout', handleResize);
         return () => {
-            window.removeEventListener('resize', update);
-            window.removeEventListener('orientationchange', update);
+            isMounted = false;
+            if (pendingFrame !== null) window.cancelAnimationFrame(pendingFrame);
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleOrientationChange);
+            document.removeEventListener('focusout', handleResize);
         };
     }, [enabled]);
 
     return state;
 };
 
-export {useLayoutMode};
+export {isEditingField, shouldDeferModeChange, useLayoutMode};

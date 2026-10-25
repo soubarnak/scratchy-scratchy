@@ -272,8 +272,8 @@ class CostumeTab extends React.Component {
                         this.props.onCloseImporting();
                     }
                 });
-            }, this.props.onCloseImporting);
-        }, this.props.onCloseImporting);
+            }, this.props.onUploadError);
+        }, this.props.onUploadError);
     }
     handleFileUploadClick () {
         this.fileInput.click();
@@ -385,6 +385,7 @@ class CostumeTab extends React.Component {
             >
                 {target.costumes ?
                     <PaintEditorWrapper
+                        isCompactAndroid={this.props.isCompactAndroid}
                         selectedCostumeIndex={this.state.selectedCostumeIndex}
                     /> :
                     null
@@ -400,9 +401,11 @@ CostumeTab.propTypes = {
     dispatchUpdateRestore: PropTypes.func,
     editingTarget: PropTypes.string,
     intl: intlShape,
+    isCompactAndroid: PropTypes.bool,
     isRtl: PropTypes.bool,
     onActivateSoundsTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
+    onUploadError: PropTypes.func.isRequired,
     onNewLibraryBackdropClick: PropTypes.func.isRequired,
     onNewLibraryCostumeClick: PropTypes.func.isRequired,
     onShowImporting: PropTypes.func.isRequired,
@@ -447,7 +450,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setRestore(restoreState));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    onUploadError: () => dispatch(showStandardAlert('fileUploadError'))
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({

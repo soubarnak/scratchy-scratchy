@@ -77,6 +77,15 @@
         min-width: 100%;
     }
 
+    /* Keep Fill, Outline, and stroke width reachable while tool controls scroll. */
+    :global(.scratchy-android) .detail-area [class*="paint-editor_editor-container-top_"] [class*="paint-editor_mod-dashed-border_"] {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        flex-shrink: 0;
+        background-color: #FFFFFF;
+    }
+
     /* canvas row fits the width */
     :global(.scratchy-android) .detail-area [class*="paint-editor_top-align-row_"] {
         min-width: 0;

@@ -5,7 +5,8 @@ import log from '../log.js';
  * Video Manager for video extensions.
  */
 class VideoProvider {
-    constructor () {
+    constructor (onError) {
+        this._onError = onError;
         /**
          * Default value for mirrored frames.
          * @type boolean
@@ -186,7 +187,11 @@ class VideoProvider {
      * @param {Error} error An error object from getUserMedia or other source of error.
      */
     onError (error) {
-        log.error('Unhandled video io device error', error);
+        if (this._onError) {
+            this._onError(error);
+        } else {
+            log.error('Unhandled video io device error', error);
+        }
     }
 
     /**

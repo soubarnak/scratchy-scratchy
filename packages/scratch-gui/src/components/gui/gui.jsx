@@ -29,10 +29,11 @@ import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
-import Controls from '../../containers/controls.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
-import MobileNav, {MOBILE_PANES} from '../mobile-nav/mobile-nav.jsx';
+import MobileNav, {MOBILE_VIEWS} from '../mobile-nav/mobile-nav.jsx';
+import MobileSpriteRail from '../../containers/mobile-sprite-rail.jsx';
+import AndroidExitConfirmation from '../android-exit-confirmation/android-exit-confirmation.jsx';
 
 import layout, {
     BLOCKS_COMPACT_FLYOUT_WIDTH,
@@ -114,6 +115,16 @@ const ariaMessages = defineMessages({
         id: 'gui.aria.targetPane',
         defaultMessage: 'Target pane',
         description: 'accessibility label for the target pane'
+    },
+    expandStage: {
+        id: 'gui.mobileNav.expandStage',
+        defaultMessage: 'Expand stage preview',
+        description: 'Accessible label for expanding the stage preview on phones'
+    },
+    collapseStage: {
+        id: 'gui.mobileNav.collapseStage',
+        defaultMessage: 'Collapse stage preview',
+        description: 'Accessible label for collapsing the stage preview on phones'
     }
 });
 
@@ -155,6 +166,9 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
+        exitConfirmationVisible,
+        onCancelExitConfirmation,
+        onConfirmExit,
         onDebugModalClose,
         onTutorialSelect,
         enableCommunity,
@@ -253,7 +267,15 @@ const GUIComponent = props => {
         blocksFlyoutScale = BLOCKS_COMPACT_SCALE;
         blocksFlyoutWidth = BLOCKS_COMPACT_FLYOUT_WIDTH;
     } else if (isMedium) blocksZoomStartScale = BLOCKS_MEDIUM_SCALE;
-    const [mobilePane, setMobilePane] = useState(MOBILE_PANES.code);
+    const [mobileView, setMobileView] = useState(MOBILE_VIEWS.create);
+    const [stageStripExpanded, setStageStripExpanded] = useState(false);
+    const [targetPaneCollapsed, setTargetPaneCollapsed] = useState(false);
+    const onToggleTargetPane = useCallback(() => {
+        setTargetPaneCollapsed(collapsed => !collapsed);
+    }, []);
+    const onToggleStageStrip = useCallback(() => {
+        setStageStripExpanded(expanded => !expanded);
+    }, []);
 
     useEffect(() => {
         // Global hook for the css of other components (`:global(.scratchy-android)`).
@@ -267,7 +289,7 @@ const GUIComponent = props => {
         // so tell them when a pane becomes visible or the stage scale changes.
         const frame = requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
         return () => cancelAnimationFrame(frame);
-    }, [isCompact, mobilePane, stageScale]);
+    }, [isCompact, mobileView, stageScale, stageStripExpanded]);
 
     const tabClassNames = {
         tabs: styles.tabs,
@@ -289,9 +311,11 @@ const GUIComponent = props => {
         isRendererSupported = Renderer.isSupported();
     }
 
-    const compactStageScale = isCompact ? stageScale : null;
-    // Palette scale/width are applied at inject time, so a layout change has to re-inject the workspace.
-    const blocksLayoutMode = isAndroid ? layoutMode : LAYOUT_MODES.full;
+    const compactStageScale = isCompact ? Math.min(
+        stageScale,
+        stageStripExpanded ? 0.8 : (viewportWidth > layout.compactMaxWidth ? 0.6 : 0.34)
+    ) : null;
+    // Keep the workspace mounted across viewport changes so undo, zoom, and scroll state survive.
     const ScaleProvider = CompactStageScaleContext.Provider;
 
     return (<ScaleProvider value={compactStageScale}><MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
@@ -304,13 +328,16 @@ const GUIComponent = props => {
         const boxStyles = classNames(styles.bodyWrapper, {
             [styles.bodyWrapperWithoutMenuBar]: menuBarHidden
         });
-        const paneClass = pane => classNames({
+        const paneClass = view => classNames({
             [styles.mobilePane]: isCompact,
-            [styles.mobilePaneHidden]: isCompact && mobilePane !== pane
+            [styles.mobilePaneHidden]: isCompact && mobileView !== view
         });
         const stageWrapper = (
             <StageWrapper
                 isFullScreen={isFullScreen}
+                isAndroidMedium={isMedium}
+                targetPaneCollapsed={targetPaneCollapsed}
+                onToggleTargetPane={onToggleTargetPane}
                 isRendererSupported={isRendererSupported}
                 isRtl={isRtl}
                 isCreating={isCreating}
@@ -349,6 +376,13 @@ const GUIComponent = props => {
                     dir={isRtl ? 'rtl' : 'ltr'}
                     {...componentProps}
                 >
+                    {exitConfirmationVisible ? (
+                        <AndroidExitConfirmation
+                            isRtl={isRtl}
+                            onCancel={onCancelExitConfirmation}
+                            onConfirm={onConfirmExit}
+                        />
+                    ) : null}
                     {telemetryModalVisible ? (
                         <TelemetryModal
                             isRtl={isRtl}
@@ -451,13 +485,15 @@ const GUIComponent = props => {
                     <Box
                         className={classNames(boxStyles, styles.flexWrapper, {
                             [styles.androidCompact]: isCompact,
-                            [styles.androidMedium]: isMedium
+                            [styles.androidMedium]: isMedium,
+                            [styles.stageStripExpanded]: isCompact && stageStripExpanded,
+                            [styles.targetPaneCollapsed]: isMedium && targetPaneCollapsed
                         })}
                     >
                         <Box
                             role="main"
                             aria-label={intl.formatMessage(ariaMessages.editor)}
-                            className={classNames(styles.editorWrapper, paneClass(MOBILE_PANES.code))}
+                            className={classNames(styles.editorWrapper, paneClass(MOBILE_VIEWS.create))}
                             element="main"
                         >
                             <Tabs
@@ -555,7 +591,7 @@ const GUIComponent = props => {
                                         element="section"
                                     >
                                         <Blocks
-                                            key={`${blocksId}/${colorMode}/${theme}/${blocksLayoutMode}`}
+                                            key={`${blocksId}/${colorMode}/${theme}`}
                                             canUseCloud={canUseCloud}
                                             grow={1}
                                             isVisible={blocksTabVisible}
@@ -587,6 +623,7 @@ const GUIComponent = props => {
                                         ariaLabel={targetIsStage ? intl.formatMessage(ariaMessages.backdropsPanel) :
                                             intl.formatMessage(ariaMessages.costumesPanel)}
                                         ariaRole="region"
+                                        isCompactAndroid={isCompact}
                                         vm={vm}
                                         onNewLibraryBackdropClick={onNewLibraryBackdropClick}
                                         onNewLibraryCostumeClick={onNewLibraryCostumeClick}
@@ -611,11 +648,6 @@ const GUIComponent = props => {
                                     ariaLabel={intl.formatMessage(ariaMessages.backpack)}
                                 />
                             ) : null}
-                            {isCompact && blocksTabVisible ? (
-                                <Box className={styles.floatingControls}>
-                                    <Controls vm={vm} />
-                                </Box>
-                            ) : null}
                         </Box>
 
                         <Box
@@ -625,17 +657,39 @@ const GUIComponent = props => {
                             element="aside"
                         >
                             {isAndroid ? (
-                                <Box className={classNames(styles.stagePane, paneClass(MOBILE_PANES.stage))}>
+                                <Box
+                                    className={classNames(styles.stagePane, {
+                                        [styles.mobilePane]: isCompact
+                                    })}
+                                >
                                     {stageWrapper}
+                                    {isCompact ? (
+                                        <button
+                                            aria-expanded={stageStripExpanded}
+                                            aria-label={intl.formatMessage(stageStripExpanded ?
+                                                ariaMessages.collapseStage : ariaMessages.expandStage)}
+                                            className={styles.stageStripToggle}
+                                            onClick={onToggleStageStrip}
+                                            type="button"
+                                        >
+                                            <span aria-hidden="true">{stageStripExpanded ? '⌄' : '⌃'}</span>
+                                        </button>
+                                    ) : null}
+                                    {isCompact ? (
+                                        <MobileSpriteRail />
+                                    ) : null}
                                 </Box>
                             ) : stageWrapper}
                             <Box
-                                className={classNames(styles.targetWrapper, paneClass(MOBILE_PANES.sprites))}
+                                className={classNames(styles.targetWrapper, paneClass(MOBILE_VIEWS.sprites), {
+                                    [styles.targetWrapperBelowStage]: isCompact && mobileView === MOBILE_VIEWS.sprites
+                                })}
                                 role="region"
                                 aria-label={intl.formatMessage(ariaMessages.targetPane)}
                                 element="section"
                             >
                                 <TargetPane
+                                    collapsed={isMedium && targetPaneCollapsed}
                                     stageSize={stageSize}
                                     vm={vm}
                                     onNewSpriteClick={onNewSpriteClick}
@@ -643,10 +697,10 @@ const GUIComponent = props => {
                                 />
                             </Box>
                         </Box>
-                        {isCompact ? (
+                        {isCompact && !isFullScreen ? (
                             <MobileNav
-                                activePane={mobilePane}
-                                onSelectPane={setMobilePane}
+                                activePane={mobileView}
+                                onSelectPane={setMobileView}
                             />
                         ) : null}
                     </Box>
@@ -687,6 +741,9 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
+    exitConfirmationVisible: PropTypes.bool,
+    onCancelExitConfirmation: PropTypes.func,
+    onConfirmExit: PropTypes.func,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,
     onTutorialSelect: PropTypes.func,

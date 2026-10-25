@@ -13,10 +13,10 @@ $mobile-nav-height: 3.5rem;
     z-index: $z-index-menu-bar;
 
     display: flex;
-    height: calc($mobile-nav-height + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
+    height: calc($mobile-nav-height + var(--sa-bottom, 0px));
+    padding-bottom: var(--sa-bottom, 0px);
+    padding-left: var(--sa-left, 0px);
+    padding-right: var(--sa-right, 0px);
     box-sizing: border-box;
 
     background-color: $ui-white;

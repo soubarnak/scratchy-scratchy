@@ -4,14 +4,18 @@ import {Share} from '@capacitor/share';
 
 import {EditorState, createStandaloneRoot, setAppElement} from '../index-standalone';
 import {setDownloadHandler} from '../lib/download-blob';
+import {cleanupStaleShareFiles, createShareBlobHandler} from '../lib/android-share';
 import {setWidenFileAccept} from '../lib/file-accept';
 import {requestCloseMenus} from '../lib/close-menus';
+import {requestCloseBlocks} from '../lib/close-blocks';
 import {setLibraryAssetBase} from '../lib/legacy-library-asset-url';
 import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import {PLATFORM} from '../lib/platform.js';
-import {closeAlert} from '../reducers/alerts';
+import {closeAlert, showStandardAlert} from '../reducers/alerts';
+import {closeCards} from '../reducers/cards';
 import {closeLoginMenu} from '../reducers/menus';
-import {closeModal} from '../reducers/modals';
+import {closeExitConfirmation, closeModal, openExitConfirmation} from '../reducers/modals';
+import {setFullScreen} from '../reducers/mode';
 
 const noop = () => {};
 
@@ -25,19 +29,6 @@ const bytesToBase64 = bytes => {
     }
     return btoa(binary);
 };
-
-// eslint-disable-next-line no-control-regex
-const UNSAFE_FILENAME_CHARS = /[\\/:*?"<>|\u0000-\u001f\u007f]/g;
-
-const sanitizeFilename = filename => {
-    const clean = String(filename || '').replace(UNSAFE_FILENAME_CHARS, '_')
-        .trim();
-    return clean.replace(/^[._\s]+$/, '') ? clean : 'Project.sb3';
-};
-
-const isShareCancel = err => !!err && (
-    /cancel|abort|dismiss/i.test(String(err.code)) || /cancel/i.test(String(err.message))
-);
 
 // Write the blob to the cache in chunks so the whole file is never held as one giant base64 string.
 const writeBlob = async (path, blob) => {
@@ -54,24 +45,6 @@ const writeBlob = async (path, blob) => {
     return uri;
 };
 
-// The WebView ignores `<a download>`: write the file to the cache and hand it to the share sheet instead.
-const shareBlob = async (filename, blob) => {
-    const path = sanitizeFilename(filename);
-    try {
-        const uri = await writeBlob(path, blob);
-        await Share.share({files: [uri]});
-    } catch (err) {
-        // Dismissing the share sheet rejects; only report real failures.
-        if (!isShareCancel(err)) {
-            // eslint-disable-next-line no-alert
-            alert(`Could not save ${path}: ${err && err.message}`);
-        }
-    } finally {
-        // The shared copy is no longer needed once the share sheet resolves or rejects.
-        await Filesystem.deleteFile({path, directory: Directory.Cache}).catch(noop);
-    }
-};
-
 let backButtonHandle = null;
 
 /*
@@ -81,13 +54,28 @@ let backButtonHandle = null;
  */
 export default appTarget => {
     setAppElement(appTarget);
-    setDownloadHandler(shareBlob);
     setWidenFileAccept(true);
     // Absolute: scratch-storage resolves relative URLs against the loaded chunk (chunks/), not the page.
     setLibraryAssetBase(new URL('library-assets/', document.baseURI).href);
 
     const state = new EditorState({
         showTelemetryModal: false
+    });
+    const shareBlob = createShareBlobHandler({
+        writeBlob,
+        share: options => Share.share(options),
+        notifyError: (path, error) => {
+            console.error('Could not save shared project:', {path, error}); // eslint-disable-line no-console
+            state.store.dispatch(showStandardAlert('saveError'));
+        }
+    });
+    setDownloadHandler(shareBlob);
+    cleanupStaleShareFiles({
+        directory: Directory.Cache,
+        readdir: options => Filesystem.readdir(options),
+        deleteFile: options => Filesystem.deleteFile(options)
+    }).catch(error => {
+        console.warn('Could not clean stale shared projects:', error); // eslint-disable-line no-console
     });
     const gui = createStandaloneRoot(state, appTarget, {
         // Sets the default project id, which makes the project fetcher load the bundled default project.
@@ -105,27 +93,45 @@ export default appTarget => {
         }
     });
 
-    // Back closes, in order: an open menu, the newest modal, a closable alert; otherwise confirm before leaving.
+    // Back closes transient UI before asking whether to discard unsaved work.
     const onBackButton = () => {
         const {store} = state;
-        const {menus, modals, alerts, projectChanged} = store.getState().scratchGui;
+        const appState = store.getState().scratchGui;
+        const {menus, modals, alerts, projectChanged} = appState;
+        if (requestCloseBlocks()) return;
+        if (appState.mode.isFullScreen) {
+            store.dispatch(setFullScreen(false));
+            return;
+        }
+        if (appState.cards.visible) {
+            store.dispatch(closeCards());
+            return;
+        }
         if (menus.loginMenu) {
             store.dispatch(closeLoginMenu());
             return;
         }
         if (requestCloseMenus()) return;
+        const escapeEvent = new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            cancelable: true
+        });
+        document.dispatchEvent(escapeEvent);
+        if (escapeEvent.defaultPrevented) return;
         const openModals = modalOrder.filter(name => modals[name]);
         if (openModals.length > 0) {
             store.dispatch(closeModal(openModals[openModals.length - 1]));
             return;
         }
-        const alertIndex = alerts.alertsList.map(a => !!a.closeButton).lastIndexOf(true);
+        const alertIndex = alerts.alertsList.map(alert => !!alert.closeButton).lastIndexOf(true);
         if (alertIndex !== -1) {
             store.dispatch(closeAlert(alertIndex));
             return;
         }
-        // eslint-disable-next-line no-alert
-        if (!projectChanged || confirm('You have unsaved changes. Exit anyway?')) {
+        if (projectChanged) {
+            store.dispatch(openExitConfirmation());
+        } else {
             App.exitApp();
         }
     };
@@ -151,6 +157,10 @@ export default appTarget => {
         canModifyCloudData: false,
         backpackVisible: false,
         showTelemetryModal: false,
-        onClickLogo: noop
+        onClickLogo: noop,
+        onConfirmExit: () => {
+            state.store.dispatch(closeExitConfirmation());
+            App.exitApp();
+        }
     });
 };

@@ -7,6 +7,55 @@
     flex-grow: 1;
 }
 
+.collapsed {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.collapsed :global([class*="sprite-info_sprite-info_"]) {
+    display: none;
+}
+
+.collapsed :global([class*="sprite-selector_sprite-selector_"]) {
+    display: flex;
+    min-width: 0;
+    margin: 0;
+}
+
+.collapsed :global([class*="sprite-selector_scroll-wrapper_"]) {
+    height: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.collapsed :global([class*="sprite-selector_items-wrapper_"]) {
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 0;
+}
+
+.collapsed :global([class*="sprite-selector_sprite-wrapper_"]) {
+    width: 3rem;
+    min-width: 3rem;
+    max-width: 3rem;
+    height: 3rem;
+    min-height: 3rem;
+    margin: 0.25rem;
+}
+
+.collapsed :global([class*="sprite-selector_add-button_"]) {
+    position: relative;
+    bottom: auto;
+    flex: 0 0 3rem;
+    align-self: center;
+}
+
+.collapsed .stage-selector-wrapper {
+    display: none;
+}
+
 .stage-selector-wrapper {
     display: flex;
     flex-basis: 72px;

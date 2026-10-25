@@ -41,6 +41,21 @@
     display: flex;
 }
 
+.target-pane-toggle {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 3rem;
+    place-items: center;
+    padding: 0;
+    border: 1px solid $ui-black-transparent;
+    border-radius: 0.5rem;
+    background: $ui-white;
+    color: $text-primary;
+    font-size: 1.25rem;
+    touch-action: manipulation;
+}
+
 .stage-size-row > *, .unselect-wrapper {
     /* Use a white background so semi-transparent selection states look correct */
     background-color: $ui-white;

@@ -1,12 +1,12 @@
 import bindAll from 'lodash.bindall';
 import React from 'react';
 import PropTypes from 'prop-types';
-import {defineMessages, injectIntl} from 'react-intl';
+import {injectIntl} from 'react-intl';
 import intlShape from './intlShape';
 import {connect} from 'react-redux';
 import log from '../lib/log';
 import sharedMessages from './shared-messages';
-import {getFileAccept} from './file-accept';
+import {getFileAccept, isScratchProjectFile} from './file-accept';
 
 import {
     LoadingStates,
@@ -16,19 +16,12 @@ import {
     requestProjectUpload
 } from '../reducers/project-state';
 import {setProjectTitle} from '../reducers/project-title';
+import {showStandardAlert} from '../reducers/alerts';
 import {
     openLoadingProject,
     closeLoadingProject
 } from '../reducers/modals';
 import {getProjectTitleFromFilename} from './sb-file-uploader-utils';
-
-const messages = defineMessages({
-    loadError: {
-        id: 'gui.projectLoader.loadError',
-        defaultMessage: 'The project file that was selected failed to load.',
-        description: 'An error that displays when a local project file fails to load.'
-    }
-});
 
 /**
  * Higher Order Component to provide behavior for loading local project files into editor.
@@ -48,6 +41,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                 'handleFinishedLoadingUpload',
                 'handleStartSelectingFileUpload',
                 'handleChange',
+                'handleReadError',
                 'onload',
                 'removeFileObjects'
             ]);
@@ -73,6 +67,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
             // create fileReader
             this.fileReader = new FileReader();
             this.fileReader.onload = this.onload;
+            this.fileReader.onerror = this.handleReadError;
             // create <input> element and add it to DOM
             this.inputElement = document.createElement('input');
             this.inputElement.accept = getFileAccept('.sb,.sb2,.sb3');
@@ -94,26 +89,33 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                 userOwnsProject
             } = this.props;
             const thisFileInput = e.target;
-            if (thisFileInput.files) { // Don't attempt to load if no file was selected
-                this.fileToUpload = thisFileInput.files[0];
+            if (!thisFileInput.files || thisFileInput.files.length === 0) {
+                this.removeFileObjects();
+                return;
+            }
+            this.fileToUpload = thisFileInput.files[0];
+            if (!isScratchProjectFile(this.fileToUpload.name)) {
+                this.props.onShowFileUploadError();
+                this.removeFileObjects();
+                return;
+            }
 
-                // If user owns the project, or user has changed the project,
-                // we must confirm with the user that they really intend to
-                // replace it. (If they don't own the project and haven't
-                // changed it, no need to confirm.)
-                let uploadAllowed = true;
-                if (userOwnsProject || (projectChanged && isShowingWithoutId)) {
-                    uploadAllowed = confirm( // eslint-disable-line no-alert
-                        intl.formatMessage(sharedMessages.replaceProjectWarning)
-                    );
-                }
-                if (uploadAllowed) {
-                    // cues step 4
-                    this.props.requestProjectUpload(loadingState);
-                } else {
-                    // skips ahead to step 7
-                    this.removeFileObjects();
-                }
+            // If user owns the project, or user has changed the project,
+            // we must confirm with the user that they really intend to
+            // replace it. (If they don't own the project and haven't
+            // changed it, no need to confirm.)
+            let uploadAllowed = true;
+            if (userOwnsProject || (projectChanged && isShowingWithoutId)) {
+                uploadAllowed = confirm( // eslint-disable-line no-alert
+                    intl.formatMessage(sharedMessages.replaceProjectWarning)
+                );
+            }
+            if (uploadAllowed) {
+                // cues step 4
+                this.props.requestProjectUpload(loadingState);
+            } else {
+                // skips ahead to step 7
+                this.removeFileObjects();
             }
         }
         // step 4 is below, in mapDispatchToProps
@@ -130,6 +132,12 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                 // skip ahead to step 7
                 this.removeFileObjects();
             }
+        }
+        handleReadError (error) {
+            log.warn(error);
+            this.props.onShowFileUploadError();
+            this.props.onLoadingFinished(this.props.loadingState, false);
+            this.removeFileObjects();
         }
         // step 6: attached as a handler on our FileReader object; called when
         // file upload raw data is available in the reader
@@ -148,7 +156,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                     })
                     .catch(error => {
                         log.warn(error);
-                        alert(this.props.intl.formatMessage(messages.loadError)); // eslint-disable-line no-alert
+                        this.props.onShowFileUploadError();
                     })
                     .then(() => {
                         this.props.onLoadingFinished(this.props.loadingState, loadingSuccess);
@@ -181,6 +189,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                 onSetProjectTitle,
                 projectChanged,
                 requestProjectUpload: requestProjectUploadProp,
+                onShowFileUploadError: _onShowFileUploadError,
                  
 
                 // Intentionally propagating this one as well, since it's used in MenuBar
@@ -211,6 +220,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
         onSetProjectTitle: PropTypes.func,
         projectChanged: PropTypes.bool,
         requestProjectUpload: PropTypes.func,
+        onShowFileUploadError: PropTypes.func,
         userOwnsProject: PropTypes.bool,
         vm: PropTypes.shape({
             loadProject: PropTypes.func
@@ -245,7 +255,8 @@ const SBFileUploaderHOC = function (WrappedComponent) {
         // step 4: transition the project state so we're ready to handle the new
         // project data. When this is done, the project state transition will be
         // noticed by componentDidUpdate()
-        requestProjectUpload: loadingState => dispatch(requestProjectUpload(loadingState))
+        requestProjectUpload: loadingState => dispatch(requestProjectUpload(loadingState)),
+        onShowFileUploadError: () => dispatch(showStandardAlert('fileUploadError'))
     });
     // Allow incoming props to override redux-provided props. Used to mock in tests.
     const mergeProps = (stateProps, dispatchProps, ownProps) => Object.assign(

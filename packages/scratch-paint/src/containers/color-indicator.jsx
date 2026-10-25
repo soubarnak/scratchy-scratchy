@@ -8,6 +8,7 @@ import intlShape from '../lib/intl-shape.js';
 import {getSelectedLeafItems} from '../helper/selection';
 import Formats, {isBitmap} from '../lib/format';
 import GradientTypes from '../lib/gradient-types';
+import {getMobileColorPreferences, saveMobileColorPreferences} from '../lib/mobile-color-preferences';
 
 import ColorIndicatorComponent from '../components/color-indicator.jsx';
 import {applyColorToSelection,
@@ -25,6 +26,9 @@ const makeColorIndicator = (label, isStroke) => {
                 'handleChangeColor',
                 'handleChangeGradientType',
                 'handleCloseColor',
+                'handleEnableOutline',
+                'handleDisableOutline',
+                'handleMobileWidthChange',
                 'handleSwap'
             ]);
 
@@ -108,11 +112,48 @@ const makeColorIndicator = (label, isStroke) => {
             // close the color menu.
             if (this.props.isEyeDropping) return;
 
+            if (this.props.colorModalVisible) {
+                [this.props.color, this.props.color2].forEach(color => {
+                    saveMobileColorPreferences(this.props.projectId, {color});
+                });
+            }
+
             // Otherwise, close the color menu and
             // also reset the color index to indicate
             // that `color1` is selected.
             this.props.onCloseColor();
             this.props.onChangeColorIndex(0);
+        }
+        handleDisableOutline () {
+            if (!isStroke) return;
+
+            const colorChanged = applyColorToSelection(
+                null,
+                0,
+                true,
+                true,
+                this.props.textEditTarget);
+            const widthChanged = applyStrokeWidthToSelection(0, this.props.textEditTarget);
+            this._hasChanged = this._hasChanged || colorChanged || widthChanged;
+            this.props.onChangeGradientType(GradientTypes.SOLID);
+            this.props.onChangeColor(null, 0);
+            this.props.onChangeColor(null, 1);
+            this.props.onChangeStrokeWidth(0);
+            this.props.onChangeColorIndex(0);
+        }
+        handleMobileWidthChange () {
+            this._hasChanged = true;
+        }
+        handleEnableOutline () {
+            const preferences = getMobileColorPreferences(this.props.projectId);
+            const strokeWidth = this.props.strokeWidth || preferences.lastStrokeWidth || 1;
+            const color = this.props.color === null || this.props.color === MIXED ? '#000000' : this.props.color;
+            this.handleChangeColor(color);
+            if (isStroke) {
+                this._hasChanged = applyStrokeWidthToSelection(strokeWidth, this.props.textEditTarget) ||
+                    this._hasChanged;
+                this.props.onChangeStrokeWidth(strokeWidth);
+            }
         }
         handleSwap () {
             if (getSelectedLeafItems().length) {
@@ -137,7 +178,15 @@ const makeColorIndicator = (label, isStroke) => {
                     {...this.props}
                     label={this.props.intl.formatMessage(label)}
                     outline={isStroke}
+                    sameAsFill={isStroke && this.props.gradientType === GradientTypes.SOLID &&
+                        this.props.fillGradientType === GradientTypes.SOLID &&
+                        this.props.color !== null && this.props.color !== MIXED &&
+                        this.props.fillColor !== null && this.props.fillColor !== MIXED &&
+                        this.props.color === this.props.fillColor}
                     onChangeColor={this.handleChangeColor}
+                    onEnableOutline={this.handleEnableOutline}
+                    onDisableOutline={this.handleDisableOutline}
+                    onMobileWidthChange={this.handleMobileWidthChange}
                     onChangeGradientType={this.handleChangeGradientType}
                     onCloseColor={this.handleCloseColor}
                     onSwap={this.handleSwap}
@@ -151,6 +200,11 @@ const makeColorIndicator = (label, isStroke) => {
         disabled: PropTypes.bool.isRequired,
         color: PropTypes.string,
         color2: PropTypes.string,
+        fillColor: PropTypes.string,
+        fillGradientType: PropTypes.oneOf(Object.keys(GradientTypes)),
+        isCompactAndroid: PropTypes.bool,
+        projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        strokeWidth: PropTypes.number,
         colorModalVisible: PropTypes.bool.isRequired,
         fillBitmapShapes: PropTypes.bool.isRequired,
         format: PropTypes.oneOf(Object.keys(Formats)),
@@ -162,6 +216,12 @@ const makeColorIndicator = (label, isStroke) => {
         onChangeGradientType: PropTypes.func,
         onChangeStrokeWidth: PropTypes.func,
         onCloseColor: PropTypes.func.isRequired,
+        onSwitchToOtherColor: PropTypes.func,
+        onSwitchToSelect: PropTypes.func,
+        onSwitchToVector: PropTypes.func,
+        onEnableOutline: PropTypes.func,
+        onDisableOutline: PropTypes.func,
+        onMobileWidthChange: PropTypes.func,
         onUpdateImage: PropTypes.func.isRequired,
         setSelectedItems: PropTypes.func.isRequired,
         textEditTarget: PropTypes.number

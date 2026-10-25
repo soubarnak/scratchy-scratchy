@@ -6,6 +6,7 @@ import VM from '@scratch/scratch-vm';
 import {connect} from 'react-redux';
 
 import {STAGE_DISPLAY_SIZES} from '../lib/layout-constants';
+import {PLATFORM} from '../lib/platform.js';
 import {getEventXY} from '../lib/touch-utils';
 import VideoProvider from '../lib/video/video-provider';
 import {BitmapAdapter as V2BitmapAdapter} from '@scratch/scratch-svg-renderer';
@@ -16,6 +17,7 @@ import {
     activateColorPicker,
     deactivateColorPicker
 } from '../reducers/color-picker';
+import {showStandardAlert} from '../reducers/alerts';
 
 const colorPickerRadius = 20;
 const dragThreshold = 3; // Same as the block drag threshold
@@ -60,7 +62,9 @@ class Stage extends React.Component {
             this.props.vm.attachRenderer(this.renderer);
 
             // Only attach a video provider once because it is stateful
-            this.props.vm.setVideoProvider(new VideoProvider());
+            this.props.vm.setVideoProvider(new VideoProvider(
+                this.props.platform === PLATFORM.ANDROID ? this.props.onShowCameraPermissionError : null
+            ));
 
             // Calling draw a single time before any project is loaded just makes
             // the canvas white instead of solid black–needed because it is not
@@ -422,6 +426,8 @@ class Stage extends React.Component {
         const {
             vm,
             onActivateColorPicker,
+            onShowCameraPermissionError: _onShowCameraPermissionError,
+            platform: _platform,
             ...props
         } = this.props;
         return (
@@ -445,6 +451,8 @@ Stage.propTypes = {
     micIndicator: PropTypes.bool,
     onActivateColorPicker: PropTypes.func,
     onDeactivateColorPicker: PropTypes.func,
+    onShowCameraPermissionError: PropTypes.func,
+    platform: PropTypes.oneOf(Object.keys(PLATFORM)),
     stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,
     useEditorDragStyle: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
@@ -458,6 +466,7 @@ const mapStateToProps = state => ({
     isColorPicking: state.scratchGui.colorPicker.active,
     isFullScreen: state.scratchGui.mode.isFullScreen,
     isStarted: state.scratchGui.vmStatus.started,
+    platform: state.scratchGui.platform.platform,
     micIndicator: state.scratchGui.micIndicator,
     // Do not use editor drag style in fullscreen or player mode.
     useEditorDragStyle: !(state.scratchGui.mode.isFullScreen || state.scratchGui.mode.isPlayerOnly)
@@ -465,7 +474,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onActivateColorPicker: () => dispatch(activateColorPicker()),
-    onDeactivateColorPicker: color => dispatch(deactivateColorPicker(color))
+    onDeactivateColorPicker: color => dispatch(deactivateColorPicker(color)),
+    onShowCameraPermissionError: () => dispatch(showStandardAlert('cameraPermissionError'))
 });
 
 export default connect(

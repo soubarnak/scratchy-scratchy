@@ -205,6 +205,7 @@ class ColorPickerComponent extends React.Component {
                     <div className={styles.rowSlider}>
                         <Slider
                             background={this._makeBackground('hue')}
+                            largeTouchTarget={this.props.largeTouchTarget}
                             value={this.props.hue}
                             onChange={this.props.onHueChange}
                         />
@@ -226,6 +227,7 @@ class ColorPickerComponent extends React.Component {
                     <div className={styles.rowSlider}>
                         <Slider
                             background={this._makeBackground('saturation')}
+                            largeTouchTarget={this.props.largeTouchTarget}
                             value={this.props.saturation}
                             onChange={this.props.onSaturationChange}
                         />
@@ -248,6 +250,7 @@ class ColorPickerComponent extends React.Component {
                         <Slider
                             lastSlider
                             background={this._makeBackground('brightness')}
+                            largeTouchTarget={this.props.largeTouchTarget}
                             value={this.props.brightness}
                             onChange={this.props.onBrightnessChange}
                         />
@@ -301,6 +304,7 @@ class ColorPickerComponent extends React.Component {
 
 ColorPickerComponent.propTypes = {
     brightness: PropTypes.number.isRequired,
+    largeTouchTarget: PropTypes.bool,
     color: PropTypes.string,
     color2: PropTypes.string,
     colorIndex: PropTypes.number.isRequired,

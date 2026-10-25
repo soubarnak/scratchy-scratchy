@@ -169,8 +169,8 @@ class SoundTab extends React.Component {
                         this.props.onCloseImporting();
                     }
                 });
-            }, this.props.onCloseImporting);
-        }, this.props.onCloseImporting);
+            }, this.props.onUploadError);
+        }, this.props.onUploadError);
     }
 
     handleDrop (dropInfo) {
@@ -317,6 +317,7 @@ SoundTab.propTypes = {
     isRtl: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
+    onUploadError: PropTypes.func.isRequired,
     onNewSoundFromLibraryClick: PropTypes.func.isRequired,
     onNewSoundFromRecordingClick: PropTypes.func.isRequired,
     onRequestCloseSoundLibrary: PropTypes.func.isRequired,
@@ -365,7 +366,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setRestore(restoreState));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    onUploadError: () => dispatch(showStandardAlert('fileUploadError'))
 });
 
 export default errorBoundaryHOC('Sound Tab')(

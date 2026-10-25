@@ -35,6 +35,7 @@ import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
+import {CLOSE_BLOCKS_EVENT} from '../lib/close-blocks';
 
 import {
     activateTab,
@@ -78,6 +79,8 @@ class Blocks extends React.Component {
             'handleMonitorsUpdate',
             'handleExtensionAdded',
             'handleBlocksInfoUpdate',
+            'handleCloseBlocks',
+            'handleFlyoutBlockClick',
             'onTargetsUpdate',
             'onVisualReport',
             'onWorkspaceUpdate',
@@ -128,14 +131,8 @@ class Blocks extends React.Component {
             }
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
-        if (typeof this.props.flyoutScale === 'number' || typeof this.props.flyoutWidth === 'number') {
-            // scratch-blocks hardcodes the palette to scale 0.675 and 250px; phones need it narrower.
-            const flyout = this.workspace.getFlyout();
-            const {flyoutScale, flyoutWidth} = this.props;
-            if (typeof flyoutScale === 'number') flyout.getFlyoutScale = () => flyoutScale;
-            if (typeof flyoutWidth === 'number') flyout.getWidth = () => flyoutWidth;
-            this.workspace.resize();
-        }
+        document.addEventListener(CLOSE_BLOCKS_EVENT, this.handleCloseBlocks);
+        this.updateFlyoutDimensions();
         this.workspace.registerToolboxCategoryCallback(
             'VARIABLE',
             this.ScratchBlocks.ScratchVariables.getVariablesCategory
@@ -208,6 +205,8 @@ class Blocks extends React.Component {
             this.props.isVisible !== nextProps.isVisible ||
             this._renderedToolboxXML !== nextProps.toolboxXML ||
             this.props.extensionLibraryVisible !== nextProps.extensionLibraryVisible ||
+            this.props.flyoutScale !== nextProps.flyoutScale ||
+            this.props.flyoutWidth !== nextProps.flyoutWidth ||
             this.props.customProceduresVisible !== nextProps.customProceduresVisible ||
             this.props.locale !== nextProps.locale ||
             this.props.anyModalVisible !== nextProps.anyModalVisible ||
@@ -215,6 +214,11 @@ class Blocks extends React.Component {
         );
     }
     componentDidUpdate (prevProps) {
+        if (this.props.flyoutScale !== prevProps.flyoutScale ||
+            this.props.flyoutWidth !== prevProps.flyoutWidth) {
+            this.updateFlyoutDimensions();
+        }
+
         // If any modals are open, call hideChaff to close z-indexed field editors
         if (this.props.anyModalVisible && !prevProps.anyModalVisible) {
             this.ScratchBlocks.hideChaff();
@@ -252,6 +256,7 @@ class Blocks extends React.Component {
         }
     }
     componentWillUnmount () {
+        document.removeEventListener(CLOSE_BLOCKS_EVENT, this.handleCloseBlocks);
         this.detachVM();
         // Hide any open field editor and move Blockly focus to the workspace
         // root before disposing. Without this, BlockSvg.dispose() detects the
@@ -272,6 +277,51 @@ class Blocks extends React.Component {
 
         // Clear the flyout blocks so that they can be recreated on mount.
         this.props.vm.clearFlyoutBlocks();
+    }
+    handleCloseBlocks (event) {
+        const contextMenu = document.querySelector('.blocklyContextMenu');
+        const contextMenuStyle = contextMenu && window.getComputedStyle(contextMenu);
+        const contextMenuOpen = contextMenuStyle && contextMenuStyle.display !== 'none' &&
+            contextMenuStyle.visibility !== 'hidden';
+        const dropdown = document.querySelector('.blocklyDropDownDiv');
+        const dropdownStyle = dropdown && window.getComputedStyle(dropdown);
+        const dropdownOpen = dropdown && dropdown.childElementCount > 0 && dropdownStyle &&
+            dropdownStyle.display !== 'none' && dropdownStyle.visibility !== 'hidden';
+        const activeElement = document.activeElement;
+        const fieldEditorOpen = activeElement && activeElement.matches(
+            '.blocklyHtmlInput, .blocklyWidgetDiv input, .blocklyWidgetDiv textarea'
+        );
+        if (!contextMenuOpen && !dropdownOpen && !fieldEditorOpen) return;
+        this.ScratchBlocks.hideChaff();
+        event.detail.handled = true;
+    }
+    handleFlyoutBlockClick (event) {
+        if (typeof this.props.flyoutScale !== 'number' ||
+            event.type !== this.ScratchBlocks.Events.CLICK ||
+            event.targetType !== 'block' || !event.blockId) return;
+        const flyout = this.workspace.getFlyout();
+        const originalBlock = this.flyoutWorkspace.getBlockById(event.blockId);
+        if (!originalBlock || !flyout.isBlockCreatable(originalBlock)) return;
+
+        // Use Blockly's flyout copy path so serialization and undo stay native.
+        const newBlock = flyout.createBlock(originalBlock);
+        newBlock.snapToGrid();
+        newBlock.bumpNeighbours();
+        this.ScratchBlocks.getFocusManager().focusNode(newBlock);
+    }
+    updateFlyoutDimensions () {
+        // scratch-blocks 2.1.40 hardcodes these accessors; no workspace option is available.
+        const flyout = this.workspace.getFlyout();
+        const {flyoutScale, flyoutWidth} = this.props;
+        const hadOverrides = Object.prototype.hasOwnProperty.call(flyout, 'getFlyoutScale') ||
+            Object.prototype.hasOwnProperty.call(flyout, 'getWidth');
+        if (typeof flyoutScale === 'number') flyout.getFlyoutScale = () => flyoutScale;
+        else delete flyout.getFlyoutScale;
+        if (typeof flyoutWidth === 'number') flyout.getWidth = () => flyoutWidth;
+        else delete flyout.getWidth;
+        const hasOverrides = Object.prototype.hasOwnProperty.call(flyout, 'getFlyoutScale') ||
+            Object.prototype.hasOwnProperty.call(flyout, 'getWidth');
+        if (hadOverrides || hasOverrides) this.workspace.resize();
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
@@ -347,6 +397,7 @@ class Blocks extends React.Component {
             .getWorkspace();
         this.flyoutWorkspace.addChangeListener(this.props.vm.flyoutBlockListener);
         this.flyoutWorkspace.addChangeListener(this.props.vm.monitorBlockListener);
+        this.flyoutWorkspace.addChangeListener(this.handleFlyoutBlockClick);
         this.props.vm.addListener('SCRIPT_GLOW_ON', this.onScriptGlowOn);
         this.props.vm.addListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
         this.props.vm.addListener('BLOCK_GLOW_ON', this.onBlockGlowOn);
@@ -361,6 +412,7 @@ class Blocks extends React.Component {
         this.props.vm.addListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
     }
     detachVM () {
+        this.flyoutWorkspace.removeChangeListener(this.handleFlyoutBlockClick);
         this.props.vm.removeListener('SCRIPT_GLOW_ON', this.onScriptGlowOn);
         this.props.vm.removeListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
         this.props.vm.removeListener('BLOCK_GLOW_ON', this.onBlockGlowOn);

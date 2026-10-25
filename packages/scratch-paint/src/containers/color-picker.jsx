@@ -128,6 +128,7 @@ class ColorPicker extends React.Component {
                 color2={this.props.color2}
                 colorIndex={this.props.colorIndex}
                 gradientType={this.props.gradientType}
+                largeTouchTarget={this.props.largeTouchTarget}
                 hue={this.state.hue}
                 isEyeDropping={this.props.isEyeDropping}
                 mode={this.props.mode}
@@ -156,6 +157,7 @@ ColorPicker.propTypes = {
     color2: PropTypes.string,
     colorIndex: PropTypes.number.isRequired,
     gradientType: PropTypes.oneOf(Object.keys(GradientTypes)).isRequired,
+    largeTouchTarget: PropTypes.bool,
     isEyeDropping: PropTypes.bool.isRequired,
     mode: PropTypes.oneOf(Object.keys(Modes)),
     onActivateEyeDropper: PropTypes.func.isRequired,

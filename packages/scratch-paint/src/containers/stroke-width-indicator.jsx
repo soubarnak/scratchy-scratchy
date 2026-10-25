@@ -13,6 +13,7 @@ import {
 import GradientTypes from '../lib/gradient-types';
 import Modes from '../lib/modes';
 import Formats, {isBitmap} from '../lib/format';
+import {saveMobileColorPreferences} from '../lib/mobile-color-preferences';
 
 class StrokeWidthIndicator extends React.Component {
     constructor (props) {
@@ -51,13 +52,24 @@ class StrokeWidthIndicator extends React.Component {
             }
         }
         this.props.onChangeStrokeWidth(newWidth);
-        if (changed) this.props.onUpdateImage();
+        saveMobileColorPreferences(this.props.projectId, {lastStrokeWidth: newWidth});
+        if (changed && this.props.deferUpdateImage) {
+            this.props.onMobileWidthChange();
+        } else if (changed) {
+            this.props.onUpdateImage();
+        }
     }
     render () {
         return (
             <StrokeWidthIndicatorComponent
                 disabled={this.props.disabled}
+                projectId={this.props.projectId}
+                deferUpdateImage={this.props.deferUpdateImage}
+                onMobileWidthChange={this.props.onMobileWidthChange}
+                showMobileControls={this.props.showMobileControls}
                 strokeWidth={this.props.strokeWidth}
+                previewColor={this.props.previewColor}
+                onSetNoOutline={this.props.onSetNoOutline}
                 onChangeStrokeWidth={this.handleChangeStrokeWidth}
             />
         );
@@ -89,6 +101,12 @@ const mapDispatchToProps = dispatch => ({
 
 StrokeWidthIndicator.propTypes = {
     disabled: PropTypes.bool.isRequired,
+    deferUpdateImage: PropTypes.bool,
+    onMobileWidthChange: PropTypes.func,
+    onSetNoOutline: PropTypes.func,
+    previewColor: PropTypes.string,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    showMobileControls: PropTypes.bool,
     format: PropTypes.oneOf(Object.keys(Formats)),
     onChangeStrokeColor: PropTypes.func.isRequired,
     onChangeStrokeColor2: PropTypes.func.isRequired,

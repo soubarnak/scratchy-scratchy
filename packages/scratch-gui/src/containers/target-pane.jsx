@@ -176,9 +176,9 @@ class TargetPane extends React.Component {
                             this.props.onCloseImporting();
                         }
                     })
-                    .catch(this.props.onCloseImporting);
-            }, this.props.onCloseImporting);
-        }, this.props.onCloseImporting);
+                    .catch(this.props.onUploadError);
+            }, this.props.onUploadError);
+        }, this.props.onUploadError);
     }
     setFileInput (input) {
         this.fileInput = input;
@@ -268,6 +268,7 @@ class TargetPane extends React.Component {
             isRtl,
             onActivateTab,
             onCloseImporting,
+            onUploadError,
             onHighlightTarget,
             onNewSpriteClick,
             onReceivedBlocks,
@@ -312,6 +313,7 @@ const {
 TargetPane.propTypes = {
     intl: intlShape.isRequired,
     onCloseImporting: PropTypes.func,
+    onUploadError: PropTypes.func,
     onShowImporting: PropTypes.func,
     dynamicSprites: PropTypes.arrayOf(spriteShape),
     ...targetPaneProps
@@ -349,7 +351,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(highlightTarget(id));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    onUploadError: () => dispatch(showStandardAlert('fileUploadError'))
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({

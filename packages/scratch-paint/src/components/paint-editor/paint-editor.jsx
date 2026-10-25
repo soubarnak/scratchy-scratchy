@@ -1,7 +1,7 @@
+import React from 'react';
 import paper from '@scratch/paper';
 import classNames from 'classnames';
 import {defineMessages, useIntl} from 'react-intl';
-import React from 'react';
 import PropTypes from 'prop-types';
 
 import PaperCanvas from '../../containers/paper-canvas.jsx';
@@ -89,10 +89,15 @@ const PaintEditorComponent = props => {
                                 {/* fill */}
                                 <FillColorIndicatorComponent
                                     className={styles.modMarginAfter}
+                                    isCompactAndroid={props.isCompactAndroid}
+                                    onSwitchToVector={props.onSwitchToVector}
+                                    projectId={props.projectId}
                                     onUpdateImage={props.onUpdateImage}
                                 />
                                 {/* stroke */}
                                 <StrokeColorIndicatorComponent
+                                    isCompactAndroid={props.isCompactAndroid}
+                                    projectId={props.projectId}
                                     onUpdateImage={props.onUpdateImage}
                                 />
                                 {/* stroke width */}
@@ -118,6 +123,9 @@ const PaintEditorComponent = props => {
                                     {/* fill */}
                                     <FillColorIndicatorComponent
                                         className={styles.modMarginAfter}
+                                        isCompactAndroid={props.isCompactAndroid}
+                                        onSwitchToVector={props.onSwitchToVector}
+                                        projectId={props.projectId}
                                         onUpdateImage={props.onUpdateImage}
                                     />
                                 </InputGroup>
@@ -308,6 +316,8 @@ const PaintEditorComponent = props => {
 
 PaintEditorComponent.propTypes = {
     canRedo: PropTypes.func.isRequired,
+    isCompactAndroid: PropTypes.bool,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     canUndo: PropTypes.func.isRequired,
     canvas: PropTypes.instanceOf(Element),
     colorInfo: Loupe.propTypes.colorInfo,

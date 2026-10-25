@@ -17,6 +17,8 @@ class PaintEditorWrapper extends React.Component {
     }
     shouldComponentUpdate (nextProps) {
         return this.props.imageId !== nextProps.imageId ||
+            this.props.isCompactAndroid !== nextProps.isCompactAndroid ||
+            this.props.projectId !== nextProps.projectId ||
             this.props.rtl !== nextProps.rtl ||
             this.props.name !== nextProps.name;
     }
@@ -62,6 +64,8 @@ class PaintEditorWrapper extends React.Component {
 PaintEditorWrapper.propTypes = {
     imageFormat: PropTypes.string.isRequired,
     imageId: PropTypes.string.isRequired,
+    isCompactAndroid: PropTypes.bool,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     name: PropTypes.string,
     rotationCenterX: PropTypes.number,
     rotationCenterY: PropTypes.number,
@@ -83,6 +87,7 @@ const mapStateToProps = (state, {selectedCostumeIndex}) => {
         rotationCenterY: costume && costume.rotationCenterY,
         imageFormat: costume && costume.dataFormat,
         imageId: targetId && `${targetId}${costume.skinId}`,
+        projectId: state.scratchGui.projectState.projectId,
         rtl: state.locales.isRtl,
         selectedCostumeIndex: index,
         vm: state.scratchGui.vm,

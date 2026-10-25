@@ -51,7 +51,7 @@ class SliderComponent extends React.Component {
         // when clicked as well. We only want to change the slider value if the user clicked on the background itself.
         if (event.target !== this.background) return;
         // Move slider handle's center to the cursor
-        this.handleClickOffset = HANDLE_WIDTH / 2;
+        this.handleClickOffset = this.handle.offsetWidth / 2;
         this.props.onChange(this.scaleMouseToSliderPosition(event));
     }
 
@@ -59,7 +59,7 @@ class SliderComponent extends React.Component {
         const {x} = getEventXY(event);
         const backgroundBBox = this.background.getBoundingClientRect();
         const scaledX = x - backgroundBBox.left - this.handleClickOffset;
-        return Math.max(0, Math.min(100, 100 * scaledX / (backgroundBBox.width - HANDLE_WIDTH)));
+        return Math.max(0, Math.min(100, 100 * scaledX / (backgroundBBox.width - this.handle.offsetWidth)));
     }
 
     setBackground (ref) {
@@ -71,12 +71,8 @@ class SliderComponent extends React.Component {
     }
 
     render () {
-        const halfHandleWidth = HANDLE_WIDTH / 2;
-        const pixelMin = halfHandleWidth;
-        const pixelMax = CONTAINER_WIDTH - halfHandleWidth;
-        const handleOffset = pixelMin +
-            ((pixelMax - pixelMin) * (this.props.value / 100)) -
-            halfHandleWidth;
+        const handleWidth = this.props.largeTouchTarget ? 44 : HANDLE_WIDTH;
+        const handleOffset = (CONTAINER_WIDTH - handleWidth) * (this.props.value / 100);
         return (
             <div
                 className={classNames({
@@ -90,7 +86,9 @@ class SliderComponent extends React.Component {
                 onClick={this.handleClickBackground}
             >
                 <div
-                    className={styles.handle}
+                    className={classNames(styles.handle, {
+                        [styles.largeTouchTarget]: this.props.largeTouchTarget
+                    })}
                     ref={this.setHandle}
                     style={{
                         left: `${handleOffset}px`
@@ -106,6 +104,7 @@ class SliderComponent extends React.Component {
 SliderComponent.propTypes = {
     background: PropTypes.string,
     lastSlider: PropTypes.bool,
+    largeTouchTarget: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
     value: PropTypes.number.isRequired
 };

@@ -4,7 +4,8 @@ import {defineMessages} from 'react-intl';
 import {changeColorIndex} from '../reducers/color-index';
 import {changeStrokeColor, changeStrokeColor2, changeStrokeGradientType} from '../reducers/stroke-style';
 import {changeStrokeWidth} from '../reducers/stroke-width';
-import {openStrokeColor, closeStrokeColor} from '../reducers/modals';
+import {openStrokeColor, closeStrokeColor, openFillColor} from '../reducers/modals';
+import {changeMode} from '../reducers/modes';
 import {getSelectedLeafItems} from '../helper/selection';
 import {setSelectedItems} from '../reducers/selected-items';
 import Modes, {GradientToolsModes} from '../lib/modes';
@@ -35,6 +36,9 @@ const mapStateToProps = state => ({
     gradientType: state.scratchPaint.color.strokeColor.gradientType,
     isEyeDropping: state.scratchPaint.color.eyeDropper.active,
     mode: state.scratchPaint.mode,
+    fillColor: state.scratchPaint.color.fillColor.primary,
+    fillGradientType: state.scratchPaint.color.fillColor.gradientType,
+    strokeWidth: state.scratchPaint.color.strokeWidth,
     shouldShowGradientTools: state.scratchPaint.mode in GradientToolsModes,
     textEditTarget: state.scratchPaint.textEditTarget
 });
@@ -55,6 +59,14 @@ const mapDispatchToProps = dispatch => ({
     },
     onOpenColor: () => {
         dispatch(openStrokeColor());
+    },
+    onSwitchToOtherColor: () => {
+        dispatch(closeStrokeColor());
+        dispatch(openFillColor());
+    },
+    onSwitchToSelect: () => {
+        dispatch(changeMode(Modes.SELECT));
+        dispatch(closeStrokeColor());
     },
     onCloseColor: () => {
         dispatch(closeStrokeColor());

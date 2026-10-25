@@ -2,6 +2,14 @@
     Page shell for the Android app. Unlike index.css there is no 1024x640 minimum size:
     the GUI picks a compact, medium or full layout itself (see components/gui/gui.css).
 */
+/* Capacitor provides the --safe-area-inset-* fallback on WebViews without env() support. */
+:global(.scratchy-android) {
+    --sa-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+    --sa-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+    --sa-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+    --sa-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+}
+
 html,
 body,
 .app {

@@ -25,7 +25,8 @@ import {
     closeBackdropLibrary,
     closeTelemetryModal,
     openExtensionLibrary,
-    closeDebugModal
+    closeDebugModal,
+    closeExitConfirmation
 } from '../reducers/modals';
 
 import {setPlatform} from '../reducers/platform';
@@ -165,6 +166,8 @@ GUI.propTypes = {
     manuallySaveThumbnails: PropTypes.bool,
     onSetManualThumbnail: PropTypes.func,
     onSetManualThumbnailButtonClick: PropTypes.func,
+    onCancelExitConfirmation: PropTypes.func,
+    onConfirmExit: PropTypes.func,
     onProjectLoaded: PropTypes.func,
     onSeeCommunity: PropTypes.func,
     onStorageInit: PropTypes.func,
@@ -182,6 +185,7 @@ GUI.propTypes = {
     projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     shouldStopProject: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
+    exitConfirmationVisible: PropTypes.bool,
     username: PropTypes.string,
     avatarBadge: PropTypes.number,
     userOwnsProject: PropTypes.bool,
@@ -211,6 +215,7 @@ const mapStateToProps = (state, ownProps) => {
         costumeLibraryVisible: state.scratchGui.modals.costumeLibrary,
         costumesTabVisible: state.scratchGui.editorTab.activeTabIndex === COSTUMES_TAB_INDEX,
         debugModalVisible: state.scratchGui.modals.debugModal,
+        exitConfirmationVisible: state.scratchGui.modals.exitConfirmation,
         error: state.scratchGui.projectState.error,
         isError: getIsError(loadingState),
         isFullScreen: state.scratchGui.mode.isFullScreen,
@@ -241,7 +246,8 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onCancelExitConfirmation: () => dispatch(closeExitConfirmation())
 });
 
 const ConnectedGUI = injectIntl(connect(

@@ -26,12 +26,34 @@ const messages = defineMessages({
     }
 });
 
+const getAndroidExtensions = (extensions, isOnline) => extensions
+    .filter(extension => !extension.bluetoothRequired)
+    .map(extension => ({
+        ...extension,
+        internetUnavailable: !isOnline && Boolean(extension.internetConnectionRequired)
+    }));
+
 class ExtensionLibrary extends React.PureComponent {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleItemSelect'
+            'handleItemSelect',
+            'handleOnlineStatusChange'
         ]);
+        this.state = {
+            isOnline: typeof navigator === 'undefined' || navigator.onLine
+        };
+    }
+    componentDidMount () {
+        window.addEventListener('online', this.handleOnlineStatusChange);
+        window.addEventListener('offline', this.handleOnlineStatusChange);
+    }
+    componentWillUnmount () {
+        window.removeEventListener('online', this.handleOnlineStatusChange);
+        window.removeEventListener('offline', this.handleOnlineStatusChange);
+    }
+    handleOnlineStatusChange () {
+        this.setState({isOnline: navigator.onLine});
     }
     handleItemSelect (item) {
         const id = item.extensionId;
@@ -53,7 +75,7 @@ class ExtensionLibrary extends React.PureComponent {
     render () {
         // hardware extensions need Bluetooth/serial, which the Android WebView does not provide
         const extensions = this.props.platform === PLATFORM.ANDROID ?
-            extensionLibraryContent.filter(extension => !extension.bluetoothRequired) :
+            getAndroidExtensions(extensionLibraryContent, this.state.isOnline) :
             extensionLibraryContent;
         const extensionLibraryThumbnailData = extensions.map(extension => ({
             rawURL: extension.iconURL || extensionIcon,
@@ -87,3 +109,4 @@ const mapStateToProps = state => ({
 });
 
 export default injectIntl(connect(mapStateToProps)(ExtensionLibrary));
+export {getAndroidExtensions};

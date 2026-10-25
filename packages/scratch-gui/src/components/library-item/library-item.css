@@ -142,6 +142,17 @@
     padding-right: 1.25rem;
 }
 
+.internet-unavailable-badge {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    background: #FFF2CC;
+    color: #4A3900;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
 .featured-description {
     display: block;
     font-weight: normal;

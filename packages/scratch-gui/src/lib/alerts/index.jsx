@@ -219,6 +219,66 @@ const alerts = [
         level: AlertLevels.SUCCESS
     },
     {
+        alertId: 'fileUploadError',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['importingAsset', 'fileUploadError'],
+        content: (
+            <FormattedMessage
+                defaultMessage="Couldn't load this file. Choose a supported Scratch project, image, or audio file."
+                description="Message shown when a selected file cannot be loaded into the editor"
+                id="gui.alerts.fileUploadError"
+            />
+        ),
+        closeButton: true,
+        level: AlertLevels.WARN,
+        maxDisplaySecs: 8
+    },
+    {
+        alertId: 'saveError',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['saveError'],
+        content: (
+            <FormattedMessage
+                defaultMessage="Couldn't save the project. Please try again."
+                description="Message shown when saving a project to the Android share sheet fails"
+                id="gui.alerts.saveError"
+            />
+        ),
+        closeButton: true,
+        level: AlertLevels.WARN,
+        maxDisplaySecs: 8
+    },
+    {
+        alertId: 'recordingPermissionError',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['recordingPermissionError'],
+        content: (
+            <FormattedMessage
+                defaultMessage="Recording sound needs microphone permission. Allow it in Android settings."
+                description="Message shown when recording cannot access the microphone"
+                id="gui.alerts.recordingPermissionError"
+            />
+        ),
+        closeButton: true,
+        level: AlertLevels.WARN,
+        maxDisplaySecs: 8
+    },
+    {
+        alertId: 'cameraPermissionError',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['cameraPermissionError'],
+        content: (
+            <FormattedMessage
+                defaultMessage="Video Sensing needs camera permission. Allow it in Android settings."
+                description="Message shown when video sensing cannot access the camera"
+                id="gui.alerts.cameraPermissionError"
+            />
+        ),
+        closeButton: true,
+        level: AlertLevels.WARN,
+        maxDisplaySecs: 8
+    },
+    {
         alertId: 'loadingExtensionData',
         alertType: AlertTypes.STANDARD,
         clearList: ['loadingExtensionData'],

@@ -23,3 +23,9 @@
     box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15);
     touch-action: none;
 }
+
+.large-touch-target {
+    width: 44px;
+    height: 44px;
+    margin-top: -11px;
+}

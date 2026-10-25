@@ -43,6 +43,9 @@ const StageWrapperComponent = function (props) {
         >
             <Box className={styles.stageMenuWrapper}>
                 <StageHeader
+                    isAndroidMedium={props.isAndroidMedium}
+                    targetPaneCollapsed={props.targetPaneCollapsed}
+                    onToggleTargetPane={props.onToggleTargetPane}
                     manuallySaveThumbnails={manuallySaveThumbnails}
                     onSetManualThumbnail={onSetManualThumbnail}
                     onSetManualThumbnailButtonClick={onSetManualThumbnailButtonClick}
@@ -76,6 +79,9 @@ StageWrapperComponent.propTypes = {
     ariaLabel: PropTypes.string,
     ariaRole: PropTypes.string,
     isCreating: PropTypes.bool,
+    isAndroidMedium: PropTypes.bool,
+    targetPaneCollapsed: PropTypes.bool,
+    onToggleTargetPane: PropTypes.func,
     isFullScreen: PropTypes.bool,
     isRendererSupported: PropTypes.bool.isRequired,
     isRtl: PropTypes.bool.isRequired,

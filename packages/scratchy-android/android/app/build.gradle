@@ -7,8 +7,8 @@ android {
         applicationId "com.soubarnak.scratchyscratchy"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.1.1"
+        versionCode 3
+        versionName "0.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -29,6 +29,15 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // Keep ordinary debug builds separate from the release key; opt in for in-place AVD updates.
+            if (System.getenv('SCRATCHY_DEBUG_USE_RELEASE_KEY') == '1') {
+                if (!(System.getenv('SCRATCHY_KEYSTORE') && System.getenv('SCRATCHY_KEYSTORE_PASS'))) {
+                    throw new GradleException('SCRATCHY_DEBUG_USE_RELEASE_KEY=1 requires SCRATCHY_KEYSTORE and SCRATCHY_KEYSTORE_PASS.')
+                }
+                signingConfig signingConfigs.release
+            }
+        }
         release {
             if (System.getenv('SCRATCHY_KEYSTORE') && System.getenv('SCRATCHY_KEYSTORE_PASS')) {
                 signingConfig signingConfigs.release

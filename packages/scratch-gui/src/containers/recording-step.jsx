@@ -3,16 +3,8 @@ import PropTypes from 'prop-types';
 import bindAll from 'lodash.bindall';
 import RecordingStepComponent from '../components/record-modal/recording-step.jsx';
 import AudioRecorder from '../lib/audio/audio-recorder.js';
-import {defineMessages, injectIntl} from 'react-intl';
-import intlShape from '../lib/intlShape.js';
-
-const messages = defineMessages({
-    alertMsg: {
-        defaultMessage: 'Could not start recording',
-        description: 'Alert for recording error',
-        id: 'gui.recordingStep.alertMsg'
-    }
-});
+import {connect} from 'react-redux';
+import {showStandardAlert} from '../reducers/alerts';
 
 class RecordingStep extends React.Component {
     constructor (props) {
@@ -42,7 +34,7 @@ class RecordingStep extends React.Component {
         this.setState({listening: true});
     }
     handleRecordingError () {
-        alert(this.props.intl.formatMessage(messages.alertMsg)); // eslint-disable-line no-alert
+        this.props.onShowRecordingPermissionError();
     }
     handleLevelUpdate (level) {
         this.setState({
@@ -62,6 +54,7 @@ class RecordingStep extends React.Component {
         const {
             onRecord,
             onStopRecording,
+            onShowRecordingPermissionError: _onShowRecordingPermissionError,
             ...componentProps
         } = this.props;
         return (
@@ -78,10 +71,14 @@ class RecordingStep extends React.Component {
 }
 
 RecordingStep.propTypes = {
-    intl: intlShape.isRequired,
+    onShowRecordingPermissionError: PropTypes.func.isRequired,
     onRecord: PropTypes.func.isRequired,
     onStopRecording: PropTypes.func.isRequired,
     recording: PropTypes.bool
 };
 
-export default injectIntl(RecordingStep);
+const mapDispatchToProps = dispatch => ({
+    onShowRecordingPermissionError: () => dispatch(showStandardAlert('recordingPermissionError'))
+});
+
+export default connect(null, mapDispatchToProps)(RecordingStep);

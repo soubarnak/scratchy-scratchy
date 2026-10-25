@@ -4,7 +4,7 @@ import {defineMessages} from 'react-intl';
 import {changeColorIndex} from '../reducers/color-index';
 import {changeFillColor, changeFillColor2} from '../reducers/fill-style';
 import {changeGradientType} from '../reducers/fill-mode-gradient-type';
-import {openFillColor, closeFillColor} from '../reducers/modals';
+import {openFillColor, closeFillColor, openStrokeColor} from '../reducers/modals';
 import {getSelectedLeafItems} from '../helper/selection';
 import {setSelectedItems} from '../reducers/selected-items';
 import Modes, {GradientToolsModes} from '../lib/modes';
@@ -50,6 +50,10 @@ const mapDispatchToProps = dispatch => ({
     },
     onOpenColor: () => {
         dispatch(openFillColor());
+    },
+    onSwitchToOtherColor: () => {
+        dispatch(closeFillColor());
+        dispatch(openStrokeColor());
     },
     onCloseColor: () => {
         dispatch(closeFillColor());

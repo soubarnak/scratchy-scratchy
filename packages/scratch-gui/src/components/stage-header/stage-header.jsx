@@ -77,6 +77,16 @@ const messages = defineMessages({
         defaultMessage: 'Full Screen Control',
         description: 'Button to enter/exit full screen mode',
         id: 'gui.stageHeader.fullscreenControl'
+    },
+    collapseTargets: {
+        defaultMessage: 'Collapse sprite management',
+        description: 'Collapse the tablet sprite management drawer',
+        id: 'gui.stageHeader.collapseTargets'
+    },
+    expandTargets: {
+        defaultMessage: 'Expand sprite management',
+        description: 'Expand the tablet sprite management drawer',
+        id: 'gui.stageHeader.expandTargets'
     }
 });
 
@@ -84,6 +94,9 @@ const StageHeaderComponent = function (props) {
     const {
         isFullScreen,
         isPlayerOnly,
+        isAndroidMedium,
+        targetPaneCollapsed,
+        onToggleTargetPane,
         manuallySaveThumbnails,
         onSetManualThumbnail,
         onSetManualThumbnailButtonClick,
@@ -333,6 +346,18 @@ const StageHeaderComponent = function (props) {
                             side={PopupSide.DOWN}
                             align={PopupAlign.LEFT}
                         />
+                        {isAndroidMedium ? (
+                            <Button
+                                aria-expanded={!targetPaneCollapsed}
+                                aria-label={intl.formatMessage(targetPaneCollapsed ?
+                                    messages.expandTargets : messages.collapseTargets)}
+                                className={styles.targetPaneToggle}
+                                onClick={onToggleTargetPane}
+                                type="button"
+                            >
+                                <span aria-hidden="true">{targetPaneCollapsed ? '▸' : '▾'}</span>
+                            </Button>
+                        ) : null}
                         <div className={styles.stageSizeToggleGroup}>
                             {stageControls}
                         </div>
@@ -362,6 +387,9 @@ const StageHeaderComponent = function (props) {
 
 StageHeaderComponent.propTypes = {
     isFullScreen: PropTypes.bool.isRequired,
+    isAndroidMedium: PropTypes.bool,
+    targetPaneCollapsed: PropTypes.bool,
+    onToggleTargetPane: PropTypes.func,
     isPlayerOnly: PropTypes.bool.isRequired,
     manuallySaveThumbnails: PropTypes.bool,
     onSetManualThumbnail: PropTypes.func,

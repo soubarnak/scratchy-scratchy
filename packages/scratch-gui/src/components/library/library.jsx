@@ -307,6 +307,7 @@ class LibraryComponent extends React.Component {
             id={key}
             insetIconURL={data.insetIconURL}
             internetConnectionRequired={data.internetConnectionRequired}
+            internetUnavailable={data.internetUnavailable}
             isPlaying={this.state.playingItem === key}
             key={key}
             name={data.name}

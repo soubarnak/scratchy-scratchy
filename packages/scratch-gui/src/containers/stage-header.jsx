@@ -50,6 +50,9 @@ class StageHeader extends React.Component {
 
 StageHeader.propTypes = {
     isFullScreen: PropTypes.bool,
+    isAndroidMedium: PropTypes.bool,
+    targetPaneCollapsed: PropTypes.bool,
+    onToggleTargetPane: PropTypes.func,
     isPlayerOnly: PropTypes.bool,
     onSetStageUnFull: PropTypes.func.isRequired,
     showBranding: PropTypes.bool,

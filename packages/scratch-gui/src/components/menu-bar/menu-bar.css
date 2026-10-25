@@ -110,6 +110,52 @@
     z-index: $z-index-menu-bar;
 }
 
+.android-overflow-button {
+    display: none;
+    justify-content: center;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    font-size: 1.5rem;
+}
+
+.mobile-title-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: $z-index-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.mobile-title-prompt {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: min(100%, 24rem);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: $ui-white;
+    color: $text-primary;
+}
+
+.mobile-title-prompt label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-title-done {
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: $looks-secondary;
+    color: $ui-white;
+    font: inherit;
+}
+
 .feedback-link {
     color: $looks-secondary;
     text-decoration: none;
@@ -242,10 +288,10 @@
     Leave room for the status bar / display cutout, and keep touch targets at least 44px tall.
 */
 :global(.scratchy-android) .menu-bar {
-    height: calc($menu-bar-height + env(safe-area-inset-top, 0px));
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
+    height: calc($menu-bar-height + var(--sa-top, 0px));
+    padding-top: var(--sa-top, 0px);
+    padding-left: var(--sa-left, 0px);
+    padding-right: var(--sa-right, 0px);
     -webkit-touch-callout: none;
 }
 
@@ -257,6 +303,13 @@
     /* Phone: logo, File, Edit and the language / theme menu only */
     :global(.scratchy-android) .hide-compact {
         display: none;
+    }
+
+    :global(.scratchy-android) .android-overflow-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
     }
 
     :global(.scratchy-android) .file-group .menu-bar-item {

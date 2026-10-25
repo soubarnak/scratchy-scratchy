@@ -21,6 +21,11 @@ const messages = defineMessages({
         defaultMessage: 'Blue star icon indicating an asset is for members',
         description: 'Alt text for star icon indicating an asset is for members',
         id: 'gui.libraryItem.memberAssetImgAlt'
+    },
+    internetUnavailable: {
+        defaultMessage: 'Needs internet while offline',
+        description: 'Badge for an extension that cannot connect while the device is offline',
+        id: 'gui.libraryItem.internetUnavailable'
     }
 });
  
@@ -103,6 +108,11 @@ class LibraryItemComponent extends React.PureComponent {
                         <span className={styles.libraryItemName}>{this.props.name}</span>
                         <br />
                         <span className={styles.featuredDescription}>{this.props.description}</span>
+                        {this.props.internetUnavailable ? (
+                            <span className={styles.internetUnavailableBadge}>
+                                <FormattedMessage {...messages.internetUnavailable} />
+                            </span>
+                        ) : null}
                     </div>
                     {this.props.bluetoothRequired ||
                         this.props.internetConnectionRequired || this.props.collaborator ? (
@@ -213,6 +223,7 @@ LibraryItemComponent.propTypes = {
     iconSource: ScratchImage.ImageSourcePropType,
     insetIconURL: PropTypes.string,
     internetConnectionRequired: PropTypes.bool,
+    internetUnavailable: PropTypes.bool,
     isPlaying: PropTypes.bool,
     name: PropTypes.oneOfType([
         PropTypes.string,

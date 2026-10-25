@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import classNames from 'classnames';
 
 import VM from '@scratch/scratch-vm';
 import {legacyConfig} from '../../legacy-config';
@@ -17,6 +18,7 @@ import styles from './target-pane.css';
  * @returns {React.Component} rendered component
  */
 const TargetPane = ({
+    collapsed,
     editingTarget,
     fileInputRef,
     hoveredTarget,
@@ -50,7 +52,7 @@ const TargetPane = ({
     ...componentProps
 }) => (
     <div
-        className={styles.targetPane}
+        className={classNames(styles.targetPane, {[styles.collapsed]: collapsed})}
         {...componentProps}
     >
 
@@ -129,6 +131,7 @@ const spriteShape = PropTypes.shape({
 
 TargetPane.propTypes = {
     editingTarget: PropTypes.string,
+    collapsed: PropTypes.bool,
     extensionLibraryVisible: PropTypes.bool,
     fileInputRef: PropTypes.func,
     hoveredTarget: PropTypes.shape({

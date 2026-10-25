@@ -147,8 +147,8 @@ class StageSelector extends React.Component {
                         this.props.onCloseImporting();
                     }
                 });
-            }, this.props.onCloseImporting);
-        }, this.props.onCloseImporting);
+            }, this.props.onUploadError);
+        }, this.props.onUploadError);
     }
     handleFileUploadClick (e) {
         e.stopPropagation(); // Prevent click from selecting the stage, that is handled manually in backdrop upload
@@ -191,7 +191,7 @@ class StageSelector extends React.Component {
     render () {
         const componentProps = omit(this.props, [
             'asset', 'dispatchSetHoveredSprite', 'id', 'intl', 'onNewBackdropClick',
-            'onActivateTab', 'onSelect', 'onShowImporting', 'onCloseImporting']);
+            'onActivateTab', 'onSelect', 'onShowImporting', 'onCloseImporting', 'onUploadError']);
         return (
             <DroppableThrottledStage
                 componentRef={this.setRef}
@@ -215,6 +215,7 @@ StageSelector.propTypes = {
     id: PropTypes.string,
     intl: intlShape.isRequired,
     onCloseImporting: PropTypes.func,
+    onUploadError: PropTypes.func,
     onSelect: PropTypes.func,
     onShowImporting: PropTypes.func,
     dynamicBackdrops: PropTypes.arrayOf(backdropShape)
@@ -240,7 +241,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setHoveredSprite(spriteId));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    onUploadError: () => dispatch(showStandardAlert('fileUploadError'))
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => defaultsDeep(

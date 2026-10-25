@@ -19,6 +19,7 @@ import Divider from '../divider/divider.jsx';
 import SaveStatus from './save-status.jsx';
 import ProjectWatcher from '../../containers/project-watcher.jsx';
 import ProjectTitleInput from './project-title-input.jsx';
+import AndroidOverflowMenu from './android-overflow-menu.jsx';
 import AuthorInfo from './author-info.jsx';
 import LoginDropdown from './login-dropdown.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
@@ -486,6 +487,14 @@ class MenuBar extends React.Component {
                             </span>
                         </button>
                     </div>
+                    {this.props.platform === PLATFORM.ANDROID ? (
+                        <AndroidOverflowMenu
+                            canEditTitle={this.props.canEditTitle}
+                            isRtl={this.props.isRtl}
+                            onOpenDebugModal={this.props.onOpenDebugModal}
+                            onOpenTipLibrary={this.props.onOpenTipLibrary}
+                        />
+                    ) : null}
                 </div>
 
                 {/* show the proper UI in the account menu, given whether the user is
