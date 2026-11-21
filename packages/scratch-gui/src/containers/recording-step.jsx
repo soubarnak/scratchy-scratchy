@@ -3,8 +3,18 @@ import PropTypes from 'prop-types';
 import bindAll from 'lodash.bindall';
 import RecordingStepComponent from '../components/record-modal/recording-step.jsx';
 import AudioRecorder from '../lib/audio/audio-recorder.js';
+import {defineMessages, injectIntl} from 'react-intl';
+import intlShape from '../lib/intlShape.js';
 import {connect} from 'react-redux';
 import {showStandardAlert} from '../reducers/alerts';
+
+const messages = defineMessages({
+    alertMsg: {
+        defaultMessage: 'Could not start recording',
+        description: 'Alert for recording error',
+        id: 'gui.recordingStep.alertMsg'
+    }
+});
 
 class RecordingStep extends React.Component {
     constructor (props) {
@@ -34,7 +44,10 @@ class RecordingStep extends React.Component {
         this.setState({listening: true});
     }
     handleRecordingError () {
-        this.props.onShowRecordingPermissionError();
+        if (this.props.onShowRecordingPermissionError) {
+            this.props.onShowRecordingPermissionError();
+        }
+        alert(this.props.intl.formatMessage(messages.alertMsg)); // eslint-disable-line no-alert
     }
     handleLevelUpdate (level) {
         this.setState({
@@ -52,6 +65,7 @@ class RecordingStep extends React.Component {
     }
     render () {
         const {
+            intl, // eslint-disable-line no-unused-vars
             onRecord,
             onStopRecording,
             onShowRecordingPermissionError: _onShowRecordingPermissionError,
@@ -71,7 +85,8 @@ class RecordingStep extends React.Component {
 }
 
 RecordingStep.propTypes = {
-    onShowRecordingPermissionError: PropTypes.func.isRequired,
+    intl: intlShape.isRequired,
+    onShowRecordingPermissionError: PropTypes.func,
     onRecord: PropTypes.func.isRequired,
     onStopRecording: PropTypes.func.isRequired,
     recording: PropTypes.bool
@@ -81,4 +96,4 @@ const mapDispatchToProps = dispatch => ({
     onShowRecordingPermissionError: () => dispatch(showStandardAlert('recordingPermissionError'))
 });
 
-export default connect(null, mapDispatchToProps)(RecordingStep);
+export default injectIntl(connect(null, mapDispatchToProps)(RecordingStep));

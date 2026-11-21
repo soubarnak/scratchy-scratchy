@@ -11,6 +11,7 @@ concurrency:
 
 jobs:
   cleanup:
+    if: github.repository == 'scratchfoundation/scratch-editor'
     permissions:
       contents: write
     runs-on: ubuntu-latest
