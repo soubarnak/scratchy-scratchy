@@ -63,6 +63,7 @@
     "test:integration": "cross-env JEST_JUNIT_OUTPUT_NAME=integration-tests-results.xml jest --maxWorkers=4 test[\\\\/]integration",
     "test:lint": "eslint",
     "test:playwright": "playwright test",
+    "test:playwright:android": "playwright test --config=playwright.android.config.js",
     "test:smoke": "jest --runInBand test[\\\\/]smoke",
     "test:unit": "cross-env JEST_JUNIT_OUTPUT_NAME=unit-tests-results.xml jest test[\\\\/]unit",
     "watch": "webpack --watch"

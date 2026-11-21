@@ -16,6 +16,7 @@ const {defineConfig, devices} = require('@playwright/test');
  */
 module.exports = defineConfig({
     testDir: './test/playwright',
+    testIgnore: 'android-outline.spec.js',
 
     // Tests in this suite are (must be) isolated and stateless, so they can safely run in parallel.
     fullyParallel: true,
